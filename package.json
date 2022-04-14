@@ -1,7 +1,7 @@
 {
-  "name": "my-editor",
-  "version": "1.0.0",
-  "description": "",
+  "name": "wysio",
+  "version": "0.0.0",
+  "description": "JavaScript object based WYSIWYG editor",
   "main": "dist/main.js",
   "scripts": {
     "dev": "vite",
@@ -9,8 +9,8 @@
     "serve": "vite preview",
     "lint": "eslint ./ && tsc --noEmit"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Timofey Tiunov <timoxa17@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^17.0.23",
     "@typescript-eslint/eslint-plugin": "^5.18.0",
