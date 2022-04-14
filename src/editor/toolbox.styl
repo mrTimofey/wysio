@@ -1,0 +1,88 @@
+// common
+.editor-inline-toolbox
+	display flex
+	justify-content center
+	align-items center
+	margin-top 4px
+
+	&__box
+		border-radius 4px
+		box-shadow 0 2px 4px rgba(0, 0, 0, 0.075)
+		background white
+		padding 2px
+
+	&__items
+		display flex
+		justify-content center
+		align-items center
+		column-gap 2px
+		flex none
+
+	&__button
+		display block
+		box-sizing border-box
+		flex none
+		border none
+		background transparent
+		min-width 30px
+		padding 7px
+		outline none
+		border-radius 4px
+		text-align center
+
+		svg
+			display block
+			width 16px
+			height 16px
+			margin 0 auto
+			fill currentColor
+			stroke none
+
+		&:hover
+			background #f1f1f1
+
+		&:active
+			opacity 0.8
+
+		&._active
+			background #e1e1e1
+
+	&__text-input
+		display block
+		outline none
+		background white
+		border 1px solid #f1f1f1
+		border-radius 2px
+		line-height 28px
+		padding 0 6px
+		width 180px
+
+		&:focus
+			border-color #e1e1e1
+
+.editor-fake-range
+	pointer-events none
+
+	> div
+		background black
+		opacity 0.2
+		position absolute
+
+// link
+.editor-inline-toolbox__button._link
+	svg
+		display none
+
+	&:not(._active)
+		svg:first-child
+			display block
+
+	&._active
+		svg:last-child
+			display block
+
+.editor-inline-toolbox__link-form
+	display flex
+	align-items center
+	column-gap 2px
+	margin-top 2px

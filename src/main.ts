@@ -1,0 +1,49 @@
+import InlineToolbox from './editor/inline-toolbox';
+import InlineBold from './editor/toolbox-items/bold';
+import InlineItalic from './editor/toolbox-items/italic';
+import InlineLink from './editor/toolbox-items/link';
+import TextBlock from './editor/block-types/text';
+import ListBlock from './editor/block-types/list';
+import Editor from './editor';
+
+const root = document.getElementById('app');
+
+if (!root) {
+	throw new Error('Nope');
+}
+
+const inlineToolbox = new InlineToolbox([new InlineBold(), new InlineItalic(), new InlineLink()]);
+const editor = new Editor();
+editor.registerBlockType('p', TextBlock, {
+	inlineToolbox,
+	tag: 'p',
+});
+editor.registerBlockType('h2', TextBlock, {
+	inlineToolbox,
+	tag: 'h2',
+});
+editor.registerBlockType('h3', TextBlock, {
+	inlineToolbox,
+	tag: 'h3',
+});
+editor.registerBlockType('h4', TextBlock, {
+	inlineToolbox,
+	tag: 'h4',
+});
+editor.registerBlockType('ul', ListBlock, {
+	inlineToolbox,
+	ordered: false,
+});
+editor.registerBlockType('ol', ListBlock, {
+	inlineToolbox,
+	ordered: true,
+});
+editor.configure({
+	defaultType: 'p',
+});
+
+editor.appendBlock(editor.createBlockByType('p'));
+editor.appendBlock(editor.createBlockByType('ul'));
+editor.appendBlock(editor.createBlockByType('ol'));
+
+root.append(editor.element);
