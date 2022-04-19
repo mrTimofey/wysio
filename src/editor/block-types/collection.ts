@@ -113,4 +113,8 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
 		// for overriding
 	}
+
+	convertTo(block: Block<unknown>, type: string): void {
+		// for overriding
+	}
 }

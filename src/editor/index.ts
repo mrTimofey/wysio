@@ -5,6 +5,7 @@ type BlocksDefinition = { [name: string]: { Ctor: { new (): Block<unknown> }; ar
 
 interface IEditorConfig {
 	defaultType?: string;
+	class?: string[];
 }
 
 export default class Editor extends CollectionBlock<IEditorConfig> {
@@ -37,6 +38,9 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 
 	configure(config: IEditorConfig): void {
 		this.#defaultType = config?.defaultType || '';
+		if (config.class) {
+			this.element.classList.add(...config.class);
+		}
 	}
 
 	/**
@@ -81,9 +85,9 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		if (!block) {
 			return;
 		}
-		const childPos = block.element.getBoundingClientRect();
 		this.#typeSelector.style.removeProperty('display');
-		this.#typeSelector.style.top = `${childPos.top}px`;
+		this.#typeSelector.style.top = `${block.element.offsetTop}px`;
+		this.#typeSelector.style.right = '100%';
 		this.#currentBlockIndex = this.getBlockIndex(block);
 	}
 
@@ -113,5 +117,20 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 			newBlock.defaultEditableElement.normalize();
 			newBlock.defaultEditableElement?.focus();
 		}
+	}
+
+	convertTo(block: Block<unknown>, type: string): void {
+		const contents = block.defaultEditableElement?.children;
+		if (!contents) {
+			return;
+		}
+		const replacement = this.createBlockByType(type);
+		this.insertBlock(this.getBlockIndex(block), replacement);
+		this.removeBlock(block);
+		if (!replacement.defaultEditableElement) {
+			return;
+		}
+		replacement.defaultEditableElement.append(...Array.from(contents));
+		replacement.defaultEditableElement.focus();
 	}
 }

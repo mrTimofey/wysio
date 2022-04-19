@@ -5,6 +5,7 @@ import InlineLink from './editor/toolbox-items/link';
 import TextBlock from './editor/block-types/text';
 import ListBlock from './editor/block-types/list';
 import Editor from './editor';
+import './text.styl';
 
 const root = document.getElementById('app');
 
@@ -14,10 +15,6 @@ if (!root) {
 
 const inlineToolbox = new InlineToolbox([new InlineBold(), new InlineItalic(), new InlineLink()]);
 const editor = new Editor();
-editor.registerBlockType('p', TextBlock, {
-	inlineToolbox,
-	tag: 'p',
-});
 editor.registerBlockType('h2', TextBlock, {
 	inlineToolbox,
 	tag: 'h2',
@@ -38,8 +35,16 @@ editor.registerBlockType('ol', ListBlock, {
 	inlineToolbox,
 	ordered: true,
 });
+editor.registerBlockType('p', TextBlock, {
+	inlineToolbox,
+	tag: 'p',
+	// what block type to convert to on '* ' or '1. '
+	olBlockType: 'ol',
+	ulBlockType: 'ul',
+});
 editor.configure({
 	defaultType: 'p',
+	class: ['editor-root'],
 });
 
 editor.appendBlock(editor.createBlockByType('p'));

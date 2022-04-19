@@ -8,6 +8,8 @@ export interface IConfig {
 	inlineToolbox?: InlineToolbox;
 	class?: string[];
 	tag?: string;
+	ulBlockType?: string;
+	olBlockType?: string;
 }
 
 /**
@@ -25,7 +27,10 @@ function getPreviousEditableBlock(block: Block<unknown> | null): Block<unknown> 
 export default class TextBlock extends Block<IConfig> {
 	#inlineToolbox?: InlineToolbox;
 	#editableBlock: EditableBlock;
-	#defaultConfig: IConfig = {};
+	#convertBlockTypes = {
+		ul: '',
+		ol: '',
+	};
 
 	constructor(private tag = 'div') {
 		super(tag);
@@ -33,17 +38,17 @@ export default class TextBlock extends Block<IConfig> {
 		this.element.append(this.#editableBlock.element);
 		// bind listener methods so they will have access to this
 		this.updateToolboxRange = this.updateToolboxRange.bind(this);
+		this.onInput = this.onInput.bind(this);
 		this.onSplit = this.onSplit.bind(this);
 		this.onEmptyEnter = this.onEmptyEnter.bind(this);
 		this.onMergeWithPrevious = this.onMergeWithPrevious.bind(this);
+		this.#editableBlock.element.addEventListener('input', this.onInput as (e: Event) => void);
 		this.#editableBlock.on('split', this.onSplit);
 		this.#editableBlock.on('emptyEnter', this.onEmptyEnter);
 		this.#editableBlock.on('mergeWithPrevious', this.onMergeWithPrevious);
 	}
 
 	configure(config: IConfig): void {
-		// we need to save the config to create similar blocks on split
-		this.#defaultConfig = config;
 		if (config.class?.length) {
 			this.element.classList.add(...config.class);
 		}
@@ -53,6 +58,8 @@ export default class TextBlock extends Block<IConfig> {
 			element.append(this.#editableBlock.element);
 			this.element.append(element);
 		}
+		this.#convertBlockTypes.ul = config.ulBlockType || '';
+		this.#convertBlockTypes.ol = config.olBlockType || '';
 		this.inlineToolbox = config.inlineToolbox;
 	}
 
@@ -74,6 +81,25 @@ export default class TextBlock extends Block<IConfig> {
 
 	private updateToolboxRange({ range }: IBlockEvents['selectionChange']) {
 		this.#inlineToolbox?.attachToRange(range, this.#editableBlock);
+	}
+
+	private onInput(event: InputEvent) {
+		const el = this.#editableBlock.element;
+		// when only first 2 or 3 symbols are typed and the second one is a space character...
+		if (this.parent && event.data === ' ' && el.firstChild instanceof Text) {
+			const text = el.firstChild.textContent;
+			if (!text?.length) {
+				return;
+			}
+			// ...convert '* ' to UL
+			if (this.#convertBlockTypes.ul && ['*\u00a0', '-\u00a0'].includes(text)) {
+				this.parent.convertTo(this, this.#convertBlockTypes.ul);
+			}
+			// ...convert 1. to OL
+			else if (this.#convertBlockTypes.ol && text === '1.\u00a0') {
+				this.parent.convertTo(this, this.#convertBlockTypes.ol);
+			}
+		}
 	}
 
 	private onSplit({ cutFragment }: IBlockEvents['split']) {
