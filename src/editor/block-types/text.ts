@@ -12,6 +12,8 @@ export interface IConfig {
 	olBlockType?: string;
 }
 
+const NUM_CHAR_CODES = ['0'.charCodeAt(0), '9'.charCodeAt(0)];
+
 /**
  * Extract previous block within a parent chain.
  * If a passed block is not the first one just return previous. Otherwise, check next parent collection.
@@ -85,7 +87,7 @@ export default class TextBlock extends Block<IConfig> {
 
 	private onInput(event: InputEvent) {
 		const el = this.#editableBlock.element;
-		// when only first 2 or 3 symbols are typed and the second one is a space character...
+		// when only first 2 or 3 symbols are typed and the last one is a space character...
 		if (this.parent && event.data === ' ' && el.firstChild instanceof Text) {
 			const text = el.firstChild.textContent;
 			if (!text?.length) {
@@ -96,8 +98,17 @@ export default class TextBlock extends Block<IConfig> {
 				this.parent.convertTo(this, this.#convertBlockTypes.ul);
 			}
 			// ...convert 1. to OL
-			else if (this.#convertBlockTypes.ol && text === '1.\u00a0') {
-				this.parent.convertTo(this, this.#convertBlockTypes.ol);
+			else if (this.#convertBlockTypes.ol) {
+				const firstCharCode = text.charCodeAt(0);
+				if (
+					// first char is numeric
+					firstCharCode >= NUM_CHAR_CODES[0] &&
+					firstCharCode <= NUM_CHAR_CODES[1] &&
+					['.', ')'].includes(text.charAt(1)) &&
+					text.charAt(2) === '\u00a0'
+				) {
+					this.parent.convertTo(this, this.#convertBlockTypes.ol);
+				}
 			}
 		}
 	}
