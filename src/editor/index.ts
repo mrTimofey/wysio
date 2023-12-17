@@ -62,6 +62,18 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		this.#typeSelector.append(btn);
 	}
 
+	/**
+	 * Add a block to the end of this collection. If block is a string - create a block by type.
+	 * @param block block instance or block type name
+	 */
+	appendBlock(block: Block<unknown> | string) {
+		super.appendBlock(typeof block === 'string' ? this.createBlockByType(block) : block);
+	}
+
+	/**
+	 * Create a block based on the given typeName.
+	 * @param typeName block type name
+	 */
 	createBlockByType(typeName: string): Block<unknown> {
 		if (!this.#types[typeName]) {
 			throw new Error(`Editor: type "${typeName}" is not registered`);

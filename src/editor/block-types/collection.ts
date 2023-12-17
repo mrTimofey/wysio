@@ -26,6 +26,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 
 	/**
 	 * Add a block to the end of this collection.
+	 * @param block block instance
 	 */
 	appendBlock(block: Block<unknown>) {
 		this.beforeBlockInsert(block);
@@ -36,6 +37,8 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 
 	/**
 	 * Insert a block after afterIndex.
+	 * @param afterIndex index to insert after
+	 * @param block block instance
 	 */
 	insertBlock(afterIndex: number, block: Block<unknown>): void {
 		this.beforeBlockInsert(block);
@@ -47,6 +50,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	/**
 	 * Remove and destroy block by its index or by block itself.
 	 * If collection becomes empty - delete the collection itself.
+	 * @param indexOrBlock block index or instance
 	 */
 	removeBlock(indexOrBlock: number | Block<unknown>): void {
 		const block = typeof indexOrBlock === 'number' ? this.#blocks.get(this.childrenRoot.children[indexOrBlock] as HTMLElement) : indexOrBlock;
@@ -63,6 +67,8 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 
 	/**
 	 * Move a block to another position.
+	 * @param from moving block index
+	 * @param afterIndex index to insert after
 	 */
 	moveBlock(from: number, afterIndex: number): void {
 		if (from === afterIndex) {
@@ -77,6 +83,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 
 	/**
 	 * Get block by index.
+	 * @param index block index
 	 */
 	getBlock(index: number): Block<unknown> | null {
 		return this.#blocks.get(this.childrenRoot.children[index] as HTMLElement) || null;
@@ -84,6 +91,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 
 	/**
 	 * Get block index.
+	 * @param block block instance
 	 */
 	getBlockIndex(block: Block<unknown>): number {
 		for (let i = 0; i < this.childrenRoot.children.length; i += 1) {
@@ -94,6 +102,10 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 		return -1;
 	}
 
+	/**
+	 * Returns the block associated with the given HTML element.
+	 * @param el HTML element to find the block for
+	 */
 	getBlockByElement(el: HTMLElement): Block<unknown> | null {
 		return this.#blocks.get(el) || null;
 	}

@@ -27,13 +27,13 @@ editor.registerBlockType('h4', TextBlock, {
 	inlineToolbox,
 	tag: 'h4',
 });
-editor.registerBlockType('ul', ListBlock, {
-	inlineToolbox,
-	ordered: false,
-});
 editor.registerBlockType('ol', ListBlock, {
 	inlineToolbox,
 	ordered: true,
+});
+editor.registerBlockType('ul', ListBlock, {
+	inlineToolbox,
+	ordered: false,
 });
 editor.registerBlockType('p', TextBlock, {
 	inlineToolbox,
@@ -47,8 +47,8 @@ editor.configure({
 	class: ['editor-root'],
 });
 
-editor.appendBlock(editor.createBlockByType('p'));
-editor.appendBlock(editor.createBlockByType('ul'));
-editor.appendBlock(editor.createBlockByType('ol'));
+editor.appendBlock('p');
+editor.appendBlock('ul');
+editor.appendBlock('ol');
 
 root.append(editor.element);

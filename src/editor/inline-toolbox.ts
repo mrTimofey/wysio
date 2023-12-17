@@ -20,7 +20,10 @@ export default class InlineToolbox {
 		return this.currentBlock;
 	}
 
-	constructor(private items: InlineToolboxItem[] = [], el?: HTMLElement) {
+	constructor(
+		private items: InlineToolboxItem[] = [],
+		el?: HTMLElement,
+	) {
 		if (el) {
 			this.el = el;
 		} else {

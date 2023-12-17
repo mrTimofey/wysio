@@ -3,7 +3,7 @@ export interface IBlockEvents {
 	split: { cutFragment: () => DocumentFragment };
 	// user pressed enter on empty editable block
 	emptyEnter: undefined;
-	// user pressed backspace when cursor is at the beginning of editable block
+	// user pressed backspace when cursor is at the beginning of an editable block
 	mergeWithPrevious: { cutFragment: () => DocumentFragment };
 	// cursor position or selection range is changed
 	selectionChange: { range: Range | null };
