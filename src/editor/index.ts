@@ -4,15 +4,15 @@ import type Block from './block-types/abstract-base';
 type BlocksDefinition = { [name: string]: { Ctor: { new (): Block<unknown> }; args?: unknown } };
 
 interface IEditorConfig {
-	defaultType?: string;
-	class?: string[];
+	defaultBlockType?: string;
+	rootClass?: string[];
 }
 
 export default class Editor extends CollectionBlock<IEditorConfig> {
 	#types: BlocksDefinition = {};
-	#typeSelector = document.createElement('div');
+	#blockTypeSelector = document.createElement('div');
 	#childrenRoot = document.createElement('div');
-	#defaultType = '';
+	#defaultBlockType = '';
 	#currentBlockIndex = -1;
 
 	protected get childrenRoot(): HTMLElement {
@@ -21,12 +21,12 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 
 	constructor(config?: IEditorConfig) {
 		super();
-		this.#typeSelector.classList.add('editor-block-type-selector');
-		this.#typeSelector.style.position = 'absolute';
-		this.#typeSelector.style.display = 'none';
+		this.#blockTypeSelector.classList.add('editor-block-type-selector');
+		this.#blockTypeSelector.style.position = 'absolute';
+		this.#blockTypeSelector.style.display = 'none';
 		this.#childrenRoot.classList.add('editor-blocks-root');
 		this.element.style.position = 'relative';
-		this.element.append(this.#typeSelector);
+		this.element.append(this.#blockTypeSelector);
 		this.element.append(this.#childrenRoot);
 		this.onChildMouseEnter = this.onChildMouseEnter.bind(this);
 		this.onMouseLeave = this.onMouseLeave.bind(this);
@@ -37,9 +37,9 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	}
 
 	configure(config: IEditorConfig): void {
-		this.#defaultType = config?.defaultType || '';
-		if (config.class) {
-			this.element.classList.add(...config.class);
+		this.#defaultBlockType = config?.defaultBlockType || '';
+		if (config.rootClass) {
+			this.element.classList.add(...config.rootClass);
 		}
 	}
 
@@ -59,7 +59,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 			e.preventDefault();
 			this.insertBlockAfterCurrent(this.createBlockByType(name));
 		});
-		this.#typeSelector.append(btn);
+		this.#blockTypeSelector.append(btn);
 	}
 
 	/**
@@ -89,7 +89,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	}
 
 	onEmpty(): void {
-		this.appendBlock(this.createBlockByType(this.#defaultType));
+		this.appendBlock(this.createBlockByType(this.#defaultBlockType));
 	}
 
 	onChildMouseEnter(event: MouseEvent) {
@@ -97,15 +97,15 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		if (!block) {
 			return;
 		}
-		this.#typeSelector.style.removeProperty('display');
-		this.#typeSelector.style.top = `${block.element.offsetTop}px`;
-		this.#typeSelector.style.right = '100%';
+		this.#blockTypeSelector.style.removeProperty('display');
+		this.#blockTypeSelector.style.top = `${block.element.offsetTop}px`;
+		this.#blockTypeSelector.style.right = '100%';
 		this.#currentBlockIndex = this.getBlockIndex(block);
 	}
 
 	onMouseLeave() {
-		this.#typeSelector.style.removeProperty('top');
-		this.#typeSelector.style.display = 'none';
+		this.#blockTypeSelector.style.removeProperty('top');
+		this.#blockTypeSelector.style.display = 'none';
 	}
 
 	beforeBlockInsert(block: Block<unknown>): void {
@@ -113,16 +113,16 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	}
 
 	onItemEmptyEnter(block: Block<unknown>): void {
-		if (this.#types[this.#defaultType] && block instanceof this.#types[this.#defaultType].Ctor) {
+		if (this.#types[this.#defaultBlockType] && block instanceof this.#types[this.#defaultBlockType].Ctor) {
 			return;
 		}
-		const newBlock = this.createBlockByType(this.#defaultType);
+		const newBlock = this.createBlockByType(this.#defaultBlockType);
 		this.insertBlock(this.getBlockIndex(block), newBlock);
 		newBlock.defaultEditableElement?.focus();
 	}
 
 	onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
-		const newBlock = this.createBlockByType(this.#defaultType);
+		const newBlock = this.createBlockByType(this.#defaultBlockType);
 		this.insertBlock(this.getBlockIndex(block), newBlock);
 		if (newBlock.defaultEditableElement) {
 			newBlock.defaultEditableElement.append(cutFragment());

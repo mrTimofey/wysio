@@ -43,8 +43,8 @@ editor.registerBlockType('p', TextBlock, {
 	ulBlockType: 'ul',
 });
 editor.configure({
-	defaultType: 'p',
-	class: ['editor-root'],
+	defaultBlockType: 'p',
+	rootClass: ['editor-root'],
 });
 
 editor.appendBlock('p');
