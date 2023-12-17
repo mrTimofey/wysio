@@ -19,7 +19,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	/**
 	 * Returns last element's defaultEditableElement.
 	 */
-	get defaultEditableElement(): HTMLElement | null {
+	override get defaultEditableElement(): HTMLElement | null {
 		const block = this.#blocks.get(this.childrenRoot.lastElementChild as HTMLElement);
 		return block?.defaultEditableElement || null;
 	}
@@ -30,9 +30,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 */
 	appendBlock(block: Block<unknown>) {
 		this.beforeBlockInsert(block);
-		this.#blocks.set(block.element, block);
 		this.childrenRoot.append(block.element);
-		block.parent = this;
 	}
 
 	/**
@@ -42,9 +40,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 */
 	insertBlock(afterIndex: number, block: Block<unknown>): void {
 		this.beforeBlockInsert(block);
-		this.#blocks.set(block.element, block);
 		this.childrenRoot.children[afterIndex].after(block.element);
-		block.parent = this;
 	}
 
 	/**
@@ -115,7 +111,8 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	}
 
 	beforeBlockInsert(block: Block<unknown>): void {
-		// for overriding
+		this.#blocks.set(block.element, block);
+		block.parent = this;
 	}
 
 	onItemEmptyEnter(block: Block<unknown>): void {

@@ -16,7 +16,7 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 	#itemConfig: ITextConfig = {};
 	#ordered = false;
 
-	protected get childrenRoot(): HTMLElement {
+	protected override get childrenRoot(): HTMLElement {
 		if (!this.#listElement) {
 			this.#listElement = document.createElement(this.#ordered ? 'ol' : 'ul');
 			this.element.append(this.#listElement);
@@ -34,7 +34,8 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		return li;
 	}
 
-	configure(config: IConfig): void {
+	override configure(config: IConfig): void {
+		super.configure(config);
 		this.#ordered = !!config.ordered;
 		this.#itemConfig = {
 			inlineToolbox: config.inlineToolbox,
@@ -46,7 +47,8 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		this.appendBlock(this.createListItem());
 	}
 
-	onEmpty(): void {
+	override onEmpty(): void {
+		super.onEmpty();
 		if (!this.parent) {
 			return;
 		}
@@ -54,7 +56,8 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		this.destroy();
 	}
 
-	onItemEmptyEnter(block: Block<unknown>): void {
+	override onItemEmptyEnter(block: Block<unknown>): void {
+		super.onItemEmptyEnter(block);
 		if (!this.parent || this.childrenRoot.lastElementChild !== block.element) {
 			return;
 		}
@@ -68,7 +71,8 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		this.removeBlock(block);
 	}
 
-	onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
+	override onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
+		super.onItemSplit(block, cutFragment);
 		const li = this.createListItem();
 		li.defaultEditableElement.append(cutFragment());
 		li.defaultEditableElement.normalize();

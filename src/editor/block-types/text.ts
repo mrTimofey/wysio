@@ -50,7 +50,8 @@ export default class TextBlock extends Block<IConfig> {
 		this.#editableBlock.on('mergeWithPrevious', this.onMergeWithPrevious);
 	}
 
-	configure(config: IConfig): void {
+	override configure(config: IConfig): void {
+		super.configure(config);
 		if (config.class?.length) {
 			this.element.classList.add(...config.class);
 		}
@@ -65,7 +66,7 @@ export default class TextBlock extends Block<IConfig> {
 		this.inlineToolbox = config.inlineToolbox;
 	}
 
-	get defaultEditableElement(): HTMLElement {
+	override get defaultEditableElement(): HTMLElement {
 		return this.#editableBlock.element;
 	}
 

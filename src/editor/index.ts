@@ -15,7 +15,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	#defaultBlockType = '';
 	#currentBlockIndex = -1;
 
-	protected get childrenRoot(): HTMLElement {
+	protected override get childrenRoot(): HTMLElement {
 		return this.#childrenRoot;
 	}
 
@@ -36,7 +36,8 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		}
 	}
 
-	configure(config: IEditorConfig): void {
+	override configure(config: IEditorConfig): void {
+		super.configure(config);
 		this.#defaultBlockType = config?.defaultBlockType || '';
 		if (config.rootClass) {
 			this.element.classList.add(...config.rootClass);
@@ -66,7 +67,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	 * Add a block to the end of this collection. If block is a string - create a block by type.
 	 * @param block block instance or block type name
 	 */
-	appendBlock(block: Block<unknown> | string) {
+	override appendBlock(block: Block<unknown> | string) {
 		super.appendBlock(typeof block === 'string' ? this.createBlockByType(block) : block);
 	}
 
@@ -88,10 +89,6 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		this.insertBlock(this.#currentBlockIndex, block);
 	}
 
-	onEmpty(): void {
-		this.appendBlock(this.createBlockByType(this.#defaultBlockType));
-	}
-
 	onChildMouseEnter(event: MouseEvent) {
 		const block = this.getBlockByElement(event.target as HTMLElement);
 		if (!block) {
@@ -108,11 +105,18 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		this.#blockTypeSelector.style.display = 'none';
 	}
 
-	beforeBlockInsert(block: Block<unknown>): void {
+	override onEmpty(): void {
+		super.onEmpty();
+		this.appendBlock(this.createBlockByType(this.#defaultBlockType));
+	}
+
+	override beforeBlockInsert(block: Block<unknown>): void {
+		super.beforeBlockInsert(block);
 		block.element.addEventListener('mouseenter', this.onChildMouseEnter);
 	}
 
-	onItemEmptyEnter(block: Block<unknown>): void {
+	override onItemEmptyEnter(block: Block<unknown>): void {
+		super.onItemEmptyEnter(block);
 		if (this.#types[this.#defaultBlockType] && block instanceof this.#types[this.#defaultBlockType].Ctor) {
 			return;
 		}
@@ -121,7 +125,8 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		newBlock.defaultEditableElement?.focus();
 	}
 
-	onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
+	override onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
+		super.onItemSplit(block, cutFragment);
 		const newBlock = this.createBlockByType(this.#defaultBlockType);
 		this.insertBlock(this.getBlockIndex(block), newBlock);
 		if (newBlock.defaultEditableElement) {
@@ -131,7 +136,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		}
 	}
 
-	convertTo(block: Block<unknown>, type: string): void {
+	override convertTo(block: Block<unknown>, type: string): void {
 		const contents = block.defaultEditableElement?.children;
 		if (!contents) {
 			return;
