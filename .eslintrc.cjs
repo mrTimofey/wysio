@@ -37,6 +37,7 @@ module.exports = {
 				allowObject: true,
 			},
 		],
+		'import/no-duplicates': 2,
 
 		indent: 0,
 		'no-shadow': 0,
@@ -53,7 +54,6 @@ module.exports = {
 		'@typescript-eslint/no-shadow': 2,
 		'@typescript-eslint/array-type': [2, { default: 'array' }],
 		'@typescript-eslint/indent': 0,
-		'@typescript-eslint/no-duplicate-imports': 2,
 		'@typescript-eslint/consistent-type-imports': 2,
 		'@typescript-eslint/member-delimiter-style': [
 			2,
