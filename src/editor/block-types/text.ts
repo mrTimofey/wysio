@@ -3,6 +3,7 @@ import type { IBlockEvents } from '../editable-block';
 import EditableBlock from '../editable-block';
 import type InlineToolbox from '../inline-toolbox';
 import CollectionBlock from './collection';
+import { setCaretToEnd } from '../../caret-utils';
 
 export interface IConfig {
 	inlineToolbox?: InlineToolbox;
@@ -164,21 +165,32 @@ export default class TextBlock extends Block<IConfig> {
 		if (!currentParent) {
 			return;
 		}
+		const isPrevious = ['up', 'left'].includes(direction);
 		let thisIndex = currentParent.getBlockIndex(this);
-		let newIndex = direction === 'previous' ? thisIndex - 1 : thisIndex + 1;
+		let newIndex = isPrevious ? thisIndex - 1 : thisIndex + 1;
 		while (currentParent?.parent && (newIndex === -1 || newIndex >= currentParent.length)) {
 			thisIndex = currentParent.parent.getBlockIndex(currentParent);
-			newIndex = direction === 'previous' ? thisIndex - 1 : thisIndex + 1;
+			newIndex = isPrevious ? thisIndex - 1 : thisIndex + 1;
 			currentParent = currentParent.parent;
 		}
 		const newBlock = currentParent?.getBlock(newIndex);
 		if (!newBlock) {
 			return;
 		}
-		if (newBlock instanceof CollectionBlock) {
-			(direction === 'previous' ? newBlock.lastEditableElement : newBlock.firstEditableElement)?.focus();
+		const elementToFocus = (() => {
+			if (newBlock instanceof CollectionBlock) {
+				return isPrevious ? newBlock.lastEditableElement : newBlock.firstEditableElement;
+			}
+			return newBlock.defaultEditableElement;
+		})();
+		if (!elementToFocus) {
+			return;
+		}
+		// move caret to the end of the previous block
+		if (isPrevious && direction === 'left' && elementToFocus.lastChild) {
+			setCaretToEnd(elementToFocus);
 		} else {
-			newBlock.defaultEditableElement?.focus();
+			elementToFocus.focus();
 		}
 	}
 }

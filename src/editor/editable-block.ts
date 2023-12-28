@@ -1,4 +1,4 @@
-import { isCaretOnFirstLine, isCaretOnLastLine } from '../caret-utils';
+import { isCaretOnFirstLine, isCaretOnLastLine, isCaretOnStart, isCaretOnEnd } from '../caret-utils';
 
 export interface IBlockEvents {
 	// user pressed enter somewhere within editable block content cutting it into 2 slices
@@ -10,7 +10,7 @@ export interface IBlockEvents {
 	// cursor position or selection range is changed
 	selectionChange: { range: Range | null };
 	// user pressed arrow keys with an intention to move to a sibling block
-	focusMove: { direction: 'next' | 'previous' };
+	focusMove: { direction: 'up' | 'down' | 'left' | 'right' };
 }
 
 export default class EditableBlock {
@@ -106,7 +106,17 @@ export default class EditableBlock {
 					event.preventDefault();
 					// inform about a user intention to move focus up/down
 					this.emit('focusMove', {
-						direction: event.key === 'ArrowUp' ? 'previous' : 'next',
+						direction: event.key === 'ArrowUp' ? 'up' : 'down',
+					});
+				}
+				break;
+			case 'ArrowLeft':
+			case 'ArrowRight':
+				if (event.key === 'ArrowLeft' ? isCaretOnStart(this.el) : isCaretOnEnd(this.el)) {
+					event.preventDefault();
+					// inform about a user intention to move focus left/right
+					this.emit('focusMove', {
+						direction: event.key === 'ArrowLeft' ? 'left' : 'right',
 					});
 				}
 				break;
