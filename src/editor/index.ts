@@ -67,8 +67,10 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	 * Add a block to the end of this collection. If block is a string - create a block by type.
 	 * @param block block instance or block type name
 	 */
-	override appendBlock(block: Block<unknown> | string) {
-		super.appendBlock(typeof block === 'string' ? this.createBlockByType(block) : block);
+	override appendBlock<T extends Block<unknown> = Block<unknown>>(block: T | string): T {
+		const blockObj = typeof block === 'string' ? this.createBlockByType(block) : block;
+		super.appendBlock(blockObj);
+		return blockObj as T;
 	}
 
 	/**

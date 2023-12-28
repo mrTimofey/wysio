@@ -34,6 +34,11 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		return li;
 	}
 
+	appendListItem(): this {
+		this.appendBlock(this.createListItem());
+		return this;
+	}
+
 	override configure(config: IConfig): void {
 		super.configure(config);
 		this.#ordered = !!config.ordered;
