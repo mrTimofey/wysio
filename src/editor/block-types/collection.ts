@@ -10,18 +10,40 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	}
 
 	/**
-	 * Return HTMLCollection representing this collection block elements.
+	 * HTMLCollection representing this collection block elements.
 	 */
 	protected get childrenRoot(): HTMLElement {
 		return this.element;
 	}
 
 	/**
-	 * Returns last element's defaultEditableElement.
+	 * Number of blocks in this collection.
 	 */
-	override get defaultEditableElement(): HTMLElement | null {
+	get length() {
+		return this.#blocks.size;
+	}
+
+	/**
+	 * First element's defaultEditableElement.
+	 */
+	get firstEditableElement(): HTMLElement | null {
+		const block = this.#blocks.get(this.childrenRoot.firstElementChild as HTMLElement);
+		return block?.defaultEditableElement || null;
+	}
+
+	/**
+	 * Last element's defaultEditableElement.
+	 */
+	get lastEditableElement(): HTMLElement | null {
 		const block = this.#blocks.get(this.childrenRoot.lastElementChild as HTMLElement);
 		return block?.defaultEditableElement || null;
+	}
+
+	/**
+	 * Last element's defaultEditableElement.
+	 */
+	override get defaultEditableElement(): HTMLElement | null {
+		return this.lastEditableElement;
 	}
 
 	/**

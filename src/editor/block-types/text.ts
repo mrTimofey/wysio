@@ -44,10 +44,12 @@ export default class TextBlock extends Block<IConfig> {
 		this.onSplit = this.onSplit.bind(this);
 		this.onEmptyEnter = this.onEmptyEnter.bind(this);
 		this.onMergeWithPrevious = this.onMergeWithPrevious.bind(this);
+		this.onFocusMove = this.onFocusMove.bind(this);
 		this.#editableBlock.element.addEventListener('input', this.onInput as (e: Event) => void);
 		this.#editableBlock.on('split', this.onSplit);
 		this.#editableBlock.on('emptyEnter', this.onEmptyEnter);
 		this.#editableBlock.on('mergeWithPrevious', this.onMergeWithPrevious);
+		this.#editableBlock.on('focusMove', this.onFocusMove);
 	}
 
 	override configure(config: IConfig): void {
@@ -155,5 +157,28 @@ export default class TextBlock extends Block<IConfig> {
 		selection.addRange(range);
 		prevBlock.defaultEditableElement.normalize();
 		this.parent.removeBlock(this);
+	}
+
+	private onFocusMove({ direction }: IBlockEvents['focusMove']) {
+		let currentParent = this.parent;
+		if (!currentParent) {
+			return;
+		}
+		let thisIndex = currentParent.getBlockIndex(this);
+		let newIndex = direction === 'previous' ? thisIndex - 1 : thisIndex + 1;
+		while (currentParent?.parent && (newIndex === -1 || newIndex >= currentParent.length)) {
+			thisIndex = currentParent.parent.getBlockIndex(currentParent);
+			newIndex = direction === 'previous' ? thisIndex - 1 : thisIndex + 1;
+			currentParent = currentParent.parent;
+		}
+		const newBlock = currentParent?.getBlock(newIndex);
+		if (!newBlock) {
+			return;
+		}
+		if (newBlock instanceof CollectionBlock) {
+			(direction === 'previous' ? newBlock.lastEditableElement : newBlock.firstEditableElement)?.focus();
+		} else {
+			newBlock.defaultEditableElement?.focus();
+		}
 	}
 }

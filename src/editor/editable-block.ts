@@ -1,3 +1,5 @@
+import { isCaretOnFirstLine, isCaretOnLastLine } from '../caret-utils';
+
 export interface IBlockEvents {
 	// user pressed enter somewhere within editable block content cutting it into 2 slices
 	split: { cutFragment: () => DocumentFragment };
@@ -7,6 +9,8 @@ export interface IBlockEvents {
 	mergeWithPrevious: { cutFragment: () => DocumentFragment };
 	// cursor position or selection range is changed
 	selectionChange: { range: Range | null };
+	// user pressed arrow keys with an intention to move to a sibling block
+	focusMove: { direction: 'next' | 'previous' };
 }
 
 export default class EditableBlock {
@@ -91,9 +95,25 @@ export default class EditableBlock {
 	}
 
 	protected onKeyDown(event: KeyboardEvent) {
-		if (event.key !== 'Backspace') {
-			return;
+		// eslint-disable-next-line default-case
+		switch (event.key) {
+			case 'Backspace':
+				this.onBackspace(event);
+				break;
+			case 'ArrowUp':
+			case 'ArrowDown':
+				if (event.key === 'ArrowUp' ? isCaretOnFirstLine(this.el) : isCaretOnLastLine(this.el)) {
+					event.preventDefault();
+					// inform about a user intention to move focus up/down
+					this.emit('focusMove', {
+						direction: event.key === 'ArrowUp' ? 'previous' : 'next',
+					});
+				}
+				break;
 		}
+	}
+
+	protected onBackspace(event: KeyboardEvent) {
 		const range = window.getSelection()?.getRangeAt(0);
 		if (!range || !range.collapsed || range.startOffset > 0) {
 			return;
