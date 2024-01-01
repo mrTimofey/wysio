@@ -101,23 +101,27 @@ export default class EditableBlock {
 				this.onBackspace(event);
 				break;
 			case 'ArrowUp':
-			case 'ArrowDown':
-				if (event.key === 'ArrowUp' ? isCaretOnFirstLine(this.el) : isCaretOnLastLine(this.el)) {
+				if (isCaretOnFirstLine(this.el)) {
 					event.preventDefault();
-					// inform about a user intention to move focus up/down
-					this.emit('focusMove', {
-						direction: event.key === 'ArrowUp' ? 'up' : 'down',
-					});
+					this.emit('focusMove', { direction: 'up' });
+				}
+				break;
+			case 'ArrowDown':
+				if (isCaretOnLastLine(this.el)) {
+					event.preventDefault();
+					this.emit('focusMove', { direction: 'down' });
 				}
 				break;
 			case 'ArrowLeft':
-			case 'ArrowRight':
-				if (event.key === 'ArrowLeft' ? isCaretOnStart(this.el) : isCaretOnEnd(this.el)) {
+				if (isCaretOnStart(this.el)) {
 					event.preventDefault();
-					// inform about a user intention to move focus left/right
-					this.emit('focusMove', {
-						direction: event.key === 'ArrowLeft' ? 'left' : 'right',
-					});
+					this.emit('focusMove', { direction: 'left' });
+				}
+				break;
+			case 'ArrowRight':
+				if (isCaretOnEnd(this.el)) {
+					event.preventDefault();
+					this.emit('focusMove', { direction: 'right' });
 				}
 				break;
 		}
