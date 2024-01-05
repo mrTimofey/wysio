@@ -105,6 +105,7 @@ export function setCaretToStart(element: HTMLElement, leftOffsetPx?: number) {
 		element.focus();
 		return;
 	}
+	// move caret to match offset
 	const selection = element.ownerDocument.defaultView?.getSelection();
 	if (!selection) {
 		return;
@@ -113,10 +114,13 @@ export function setCaretToStart(element: HTMLElement, leftOffsetPx?: number) {
 	const range = element.ownerDocument.createRange();
 	range.selectNodeContents(getDeepFirstChild(element));
 
+	// first line top position is used to prevent caret from moving to another line of text
 	const firstLineTop = getFirstLineRect(element)?.top ?? element.getBoundingClientRect().top;
 	let offset = range.getBoundingClientRect().left;
+	// max offset for a current endContainer
 	let maxOffset = range.endOffset;
 	range.collapse(true);
+	// move caret right until it reaches the offset
 	while (offset < leftOffsetPx) {
 		const oldContainer = range.endContainer;
 		const oldOffset = range.endOffset;
@@ -152,10 +156,12 @@ export function setCaretToEnd(element: HTMLElement, leftOffsetPx?: number) {
 	const range = element.ownerDocument.createRange();
 	range.selectNodeContents(getDeepLastChild(element));
 	range.collapse(false);
-	// move caret left until it reaches the offset
+	// move caret to match offset
 	if (leftOffsetPx) {
+		// last line top position is used to prevent caret from moving to another line
 		const lastLineTop = getLastLineRect(element)?.top ?? element.getBoundingClientRect().top;
 		let offset = range.getBoundingClientRect().left;
+		// move caret left until it reaches the offset
 		while (offset > leftOffsetPx) {
 			const oldContainer = range.endContainer;
 			const oldOffset = range.endOffset;
