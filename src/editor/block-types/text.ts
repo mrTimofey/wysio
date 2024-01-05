@@ -3,7 +3,7 @@ import type { IBlockEvents } from '../editable-block';
 import EditableBlock from '../editable-block';
 import type InlineToolbox from '../inline-toolbox';
 import CollectionBlock from './collection';
-import { setCaretToEnd, setCaretToStart } from '../../caret-utils';
+import { getCaretRange, setCaretToEnd, setCaretToStart } from '../../caret-utils';
 
 export interface IConfig {
 	inlineToolbox?: InlineToolbox;
@@ -186,11 +186,19 @@ export default class TextBlock extends Block<IConfig> {
 		if (!elementToFocus) {
 			return;
 		}
-		// move caret to the end of the previous block
-		if (isPrevious) {
-			setCaretToEnd(elementToFocus);
-		} else {
-			setCaretToStart(elementToFocus);
+		switch (direction) {
+			case 'left':
+				setCaretToEnd(elementToFocus);
+				break;
+			case 'up':
+				setCaretToEnd(elementToFocus, getCaretRange(this.defaultEditableElement)?.getBoundingClientRect().left);
+				break;
+			case 'down':
+				setCaretToStart(elementToFocus, getCaretRange(this.defaultEditableElement)?.getBoundingClientRect().left);
+				break;
+			default:
+				setCaretToStart(elementToFocus);
+				break;
 		}
 	}
 }
