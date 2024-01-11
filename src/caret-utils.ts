@@ -1,30 +1,54 @@
-export function getCaretRange(element: HTMLElement) {
+/**
+ * Get a range within the element if there is any.
+ * @param element element
+ */
+export function getCaretRange(element: HTMLElement): Range | null {
 	if (element.ownerDocument.activeElement !== element) {
 		return null;
 	}
 	return element.ownerDocument.defaultView?.getSelection()?.getRangeAt(0) || null;
 }
 
-export function getCaretRect(element: HTMLElement) {
+/**
+ * Get a rectangle object representing a range within the element if there is any.
+ * @param element element
+ */
+export function getCaretRect(element: HTMLElement): DOMRect | null {
 	return getCaretRange(element)?.getBoundingClientRect() || null;
 }
 
-export function getFillingRange(element: HTMLElement) {
+/**
+ * Create a range with all the contents of the element selected.
+ * @param element element
+ */
+export function createFillingRange(element: HTMLElement): Range {
 	const range = element.ownerDocument.createRange();
 	range.selectNodeContents(element);
 	return range;
 }
 
-export function getFirstLineRect(element: HTMLElement) {
-	return getFillingRange(element).getClientRects()[0];
+/**
+ * Get a rectangle object representing the first line of the element.
+ * @param element element
+ */
+export function getFirstLineRect(element: HTMLElement): DOMRect | null {
+	return createFillingRange(element).getClientRects()[0];
 }
 
-export function getLastLineRect(element: HTMLElement) {
-	const lineRects = getFillingRange(element).getClientRects();
+/**
+ * Get a rectangle object representing the last line of the element.
+ * @param element element
+ */
+export function getLastLineRect(element: HTMLElement): DOMRect | null {
+	const lineRects = createFillingRange(element).getClientRects();
 	return lineRects[lineRects.length - 1];
 }
 
-export function isCaretOnFirstLine(element: HTMLElement) {
+/**
+ * Determine if caret is somewhere in the first line of the element.
+ * @param element element
+ */
+export function isCaretOnFirstLine(element: HTMLElement): boolean {
 	const caretRect = getCaretRect(element);
 	if (!caretRect) {
 		return false;
@@ -33,7 +57,11 @@ export function isCaretOnFirstLine(element: HTMLElement) {
 	return !firstLineRect || caretRect.top === firstLineRect.top;
 }
 
-export function isCaretOnLastLine(element: HTMLElement) {
+/**
+ * Determine if caret is somewhere in the last line of the element.
+ * @param element element
+ */
+export function isCaretOnLastLine(element: HTMLElement): boolean {
 	const caretRect = getCaretRect(element);
 	if (!caretRect) {
 		return false;
@@ -42,7 +70,11 @@ export function isCaretOnLastLine(element: HTMLElement) {
 	return !lastLineRect || caretRect.bottom === lastLineRect.bottom;
 }
 
-export function isCaretOnStart(element: HTMLElement) {
+/**
+ * Determine if caret is at the start of the element.
+ * @param element element
+ */
+export function isCaretOnStart(element: HTMLElement): boolean {
 	const range = getCaretRange(element);
 	if (!range) {
 		return false;
@@ -53,7 +85,11 @@ export function isCaretOnStart(element: HTMLElement) {
 	return preCaretRange.toString().length === 0;
 }
 
-export function isCaretOnEnd(element: HTMLElement) {
+/**
+ * Determine if caret is at the end of the element.
+ * @param element element
+ */
+export function isCaretOnEnd(element: HTMLElement): boolean {
 	const range = getCaretRange(element);
 	if (!range || (range.endContainer.nodeValue && range.endOffset !== range.endContainer.nodeValue.length)) {
 		return false;
@@ -68,22 +104,34 @@ export function isCaretOnEnd(element: HTMLElement) {
 	return false;
 }
 
-function getDeepFirstChild(element: Node): Node {
-	let child = element;
+/**
+ * Get deepest first element of the parent.
+ * @param parent parent element
+ */
+function getDeepFirstChild(parent: Node): Node {
+	let child = parent;
 	while (child.firstChild) {
 		child = child.firstChild;
 	}
 	return child;
 }
 
-function getDeepLastChild(element: Node): Node {
-	let child = element;
+/**
+ * Get deepest last element of the parent.
+ * @param parent parent element
+ */
+function getDeepLastChild(parent: Node): Node {
+	let child = parent;
 	while (child.lastChild) {
 		child = child.lastChild;
 	}
 	return child;
 }
 
+/**
+ * Get previous deepest element of a previous sibling if there is any.
+ * @param element the element to get a sibling of
+ */
 function getDeepPrevSibling(element: Node): Node | null {
 	let res: Node | null = element;
 	while (res && !res.previousSibling) {
@@ -92,6 +140,10 @@ function getDeepPrevSibling(element: Node): Node | null {
 	return res?.previousSibling ? getDeepLastChild(res.previousSibling) : null;
 }
 
+/**
+ * Get next deepest element of a next sibling if there is any.
+ * @param element the element to get a sibling of
+ */
 function getDeepNextSibling(element: Node): Node | null {
 	let res: Node | null = element;
 	while (res && !res.nextSibling) {
@@ -100,7 +152,12 @@ function getDeepNextSibling(element: Node): Node | null {
 	return res?.nextSibling ? getDeepLastChild(res.nextSibling) : null;
 }
 
-export function setCaretToStart(element: HTMLElement, leftOffsetPx?: number) {
+/**
+ * Move caret to the start of the element. Try to adjust caret position horizontally if left offset is provided.
+ * @param element editable element
+ * @param leftOffsetPx left offset in px
+ */
+export function setCaretToStart(element: HTMLElement, leftOffsetPx?: number): void {
 	if (!leftOffsetPx) {
 		element.focus();
 		return;
@@ -114,7 +171,7 @@ export function setCaretToStart(element: HTMLElement, leftOffsetPx?: number) {
 	const range = element.ownerDocument.createRange();
 	range.selectNodeContents(getDeepFirstChild(element));
 
-	// first line top position is used to prevent caret from moving to another line of text
+	// first line top position is used to prevent caret from moving up to the previous line
 	const firstLineTop = getFirstLineRect(element)?.top ?? element.getBoundingClientRect().top;
 	let offset = range.getBoundingClientRect().left;
 	// max offset for a current endContainer
@@ -147,7 +204,12 @@ export function setCaretToStart(element: HTMLElement, leftOffsetPx?: number) {
 	selection.addRange(range);
 }
 
-export function setCaretToEnd(element: HTMLElement, leftOffsetPx?: number) {
+/**
+ * Move caret to the end of the element. Try to adjust caret position horizontally if left offset is provided.
+ * @param element editable element
+ * @param leftOffsetPx left offset in px
+ */
+export function setCaretToEnd(element: HTMLElement, leftOffsetPx?: number): void {
 	const selection = element.ownerDocument.defaultView?.getSelection();
 	if (!selection) {
 		return;
@@ -158,7 +220,7 @@ export function setCaretToEnd(element: HTMLElement, leftOffsetPx?: number) {
 	range.collapse(false);
 	// move caret to match offset
 	if (leftOffsetPx) {
-		// last line top position is used to prevent caret from moving to another line
+		// last line top position is used to prevent caret from moving to the next line
 		const lastLineTop = getLastLineRect(element)?.top ?? element.getBoundingClientRect().top;
 		let offset = range.getBoundingClientRect().left;
 		// move caret left until it reaches the offset
