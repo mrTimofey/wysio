@@ -53,6 +53,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	appendBlock(block: Block<unknown>) {
 		this.beforeBlockInsert(block);
 		this.childrenRoot.append(block.element);
+		block.parent = this;
 	}
 
 	/**
@@ -76,7 +77,6 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 			return;
 		}
 		block.element.remove();
-		block.destroy();
 		this.#blocks.delete(block.element);
 		if (this.#blocks.size === 0) {
 			this.onEmpty();

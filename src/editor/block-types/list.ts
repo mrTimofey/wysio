@@ -1,36 +1,80 @@
 import type InlineToolbox from '../inline-toolbox';
 import type Block from './abstract-base';
 import CollectionBlock from './collection';
+import ListItemBlock from './list-item';
 import type { IConfig as ITextConfig } from './text';
-import TextBlock from './text';
 
 export interface IConfig {
 	inlineToolbox?: InlineToolbox;
 	class?: string[];
 	itemClass?: string[];
 	ordered?: boolean;
+	maxLevel?: number;
 }
 
 export default class ListBlock extends CollectionBlock<IConfig> {
 	#listElement: HTMLUListElement | HTMLOListElement | null = null;
-	#itemConfig: ITextConfig = {};
-	#ordered = false;
+	#config?: IConfig;
 
 	protected override get childrenRoot(): HTMLElement {
 		if (!this.#listElement) {
-			this.#listElement = document.createElement(this.#ordered ? 'ol' : 'ul');
+			this.#listElement = document.createElement(this.ordered ? 'ol' : 'ul');
 			this.element.append(this.#listElement);
 		}
 		return this.#listElement;
 	}
 
 	get ordered() {
-		return this.#ordered;
+		return this.#config?.ordered ?? false;
 	}
 
-	createListItem(): TextBlock {
-		const li = new TextBlock('li');
-		li.configure(this.#itemConfig);
+	get itemConfig(): ITextConfig {
+		return {
+			inlineToolbox: this.#config?.inlineToolbox,
+			class: this.#config?.itemClass,
+		};
+	}
+
+	get level() {
+		let listParentCount = 0;
+		const parent = this.parent;
+		while (parent?.parent && parent.parent instanceof ListBlock) {
+			listParentCount += 1;
+		}
+		return listParentCount;
+	}
+
+	createListItem(): ListItemBlock {
+		const li = new ListItemBlock({
+			onGoDeeper: (item) => {
+				if (this.level >= (this.#config?.maxLevel ?? Infinity)) {
+					return;
+				}
+				const previousListItemIdx = this.getBlockIndex(item);
+				const previousListItem = (() => {
+					if (previousListItemIdx > 0) {
+						return this.getBlock(previousListItemIdx - 1)!;
+					}
+					const emptyItem = this.createListItem();
+					this.appendBlock(emptyItem);
+					return emptyItem;
+				})();
+				const sub = this.createSubList();
+				previousListItem.element.append(sub.element);
+				sub.appendBlock(item);
+				// remove initial empty list item from the sub list
+				sub.removeBlock(0);
+				sub.defaultEditableElement?.focus();
+			},
+			onGoUpper: (item) => {
+				if (!(this.parent instanceof ListBlock)) {
+					return;
+				}
+				item.parent?.removeBlock(item);
+				this.appendBlock(item);
+			},
+		});
+		li.configure(this.itemConfig);
 		return li;
 	}
 
@@ -39,13 +83,18 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		return this;
 	}
 
+	createSubList(): ListBlock {
+		const sub = new ListBlock();
+		if (this.#config) {
+			sub.configure(this.#config);
+		}
+		sub.parent = this;
+		return sub;
+	}
+
 	override configure(config: IConfig): void {
 		super.configure(config);
-		this.#ordered = !!config.ordered;
-		this.#itemConfig = {
-			inlineToolbox: config.inlineToolbox,
-			class: config.itemClass,
-		};
+		this.#config = config;
 		if (config.class?.length) {
 			this.element.classList.add(...config.class);
 		}
@@ -57,6 +106,7 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		if (!this.parent) {
 			return;
 		}
+		this.parent.removeBlock(this);
 		this.element.remove();
 		this.destroy();
 	}
