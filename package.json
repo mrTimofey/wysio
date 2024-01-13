@@ -7,11 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "lint": "eslint ./ && tsc --noEmit"
+    "lint": "eslint ./ && tsc --noEmit",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
   },
   "author": "Timofey Tiunov <timoxa17@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.40.1",
     "@types/node": "^20.10.4",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
