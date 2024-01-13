@@ -48,10 +48,5 @@ editor.configure({
 });
 
 editor.appendBlock('p');
-editor.lastEditableElement!.innerHTML = 'paragraph<br>paragraph';
-editor.appendBlock('ul');
-editor.lastEditableElement!.innerHTML = 'unsorted list<br>unsorted list';
-editor.appendBlock('ol');
-editor.lastEditableElement!.innerHTML = 'sorted list';
 
 root.append(editor.element);

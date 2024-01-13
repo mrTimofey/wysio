@@ -24,6 +24,8 @@ export default class EditableBlock {
 
 	constructor(private el: HTMLElement) {
 		el.contentEditable = 'true';
+		el.role = 'textbox';
+		el.ariaMultiLine = 'true';
 		el.addEventListener('keypress', (event) => this.onKeyPress(event));
 		el.addEventListener('keydown', (event) => this.onKeyDown(event));
 		el.addEventListener('focus', () => this.startSelectionTracking());
