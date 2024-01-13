@@ -98,11 +98,21 @@ export default class TextBlock extends Block<IConfig> {
 			if (!text?.length) {
 				return;
 			}
-			// ...convert '* ' to UL
-			if (this.#convertBlockTypes.ul && ['*\u00a0', '-\u00a0'].includes(text)) {
+			// ...convert '* ' or '- ' to UL
+			if (
+				this.#convertBlockTypes.ul &&
+				[
+					// for Chromium and friends
+					'*\u00a0',
+					'-\u00a0',
+					// for Firefox
+					'* ',
+					'- ',
+				].includes(text)
+			) {
 				this.parent.convertTo(this, this.#convertBlockTypes.ul);
 			}
-			// ...convert 1. to OL
+			// ...convert '1. ' or '1) ' to OL
 			else if (this.#convertBlockTypes.ol) {
 				const firstCharCode = text.charCodeAt(0);
 				if (
@@ -110,7 +120,12 @@ export default class TextBlock extends Block<IConfig> {
 					firstCharCode >= NUM_CHAR_CODES[0] &&
 					firstCharCode <= NUM_CHAR_CODES[1] &&
 					['.', ')'].includes(text.charAt(1)) &&
-					text.charAt(2) === '\u00a0'
+					[
+						// for Chromium and friends
+						'\u00a0',
+						// for Firefox
+						' ',
+					].includes(text.charAt(2))
 				) {
 					this.parent.convertTo(this, this.#convertBlockTypes.ol);
 				}
