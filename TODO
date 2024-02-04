@@ -1,4 +1,6 @@
 List levels
+Merge sibling ul/ol's
+Rename EditableBlock -> RichTextbox to prevent Block ambiguity
 Multiple blocks copying
 Block type conversion
 Improve block adding UX
