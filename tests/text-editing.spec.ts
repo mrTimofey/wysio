@@ -86,6 +86,16 @@ test('new paragraph is not created when current one is empty', async ({ page }) 
 	});
 });
 
+test('paragraph is created when ENTER is pressed on empty list item', async ({ page }) => {
+	const p = page.getByRole('textbox');
+	await p.pressSequentially('* ');
+	const li = page.locator('li *:focus');
+	await li.press('Enter');
+	const pAgain = page.locator('p *:focus');
+	await pAgain.fill(TEXT);
+	await expect(pAgain).toContainText(TEXT);
+});
+
 test.skip('test smth', async ({ page }) => {
 	await createDocumentWithLevels(page);
 	expect(true).toBe(true);
