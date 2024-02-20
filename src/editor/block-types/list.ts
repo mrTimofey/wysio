@@ -2,27 +2,18 @@ import type InlineToolbox from '../inline-toolbox';
 import type Block from './abstract-base';
 import CollectionBlock from './collection';
 import ListItemBlock from './list-item';
-import type { IConfig as ITextConfig } from './text';
 
-export interface IConfig {
-	inlineToolbox?: InlineToolbox;
-	class?: string[];
-	itemClass?: string[];
-	ordered?: boolean;
-	maxLevel?: number;
-}
-
-export default class ListBlock extends CollectionBlock<IConfig> {
+export default class ListBlock extends CollectionBlock {
 	inlineToolbox: InlineToolbox | undefined = undefined;
 	#listElement: HTMLUListElement | HTMLOListElement | null = null;
-	#config?: IConfig;
 
-	constructor(ordered = false, maxLevel: number = 0) {
+	constructor(
+		// TODO different types for flat list with levels
+		public ordered = false,
+		public maxLevel: number = 0,
+	) {
 		super();
-		this.configure({
-			ordered,
-			maxLevel,
-		});
+		this.appendBlock(this.createListItem());
 	}
 
 	protected override get childrenRoot(): HTMLElement {
@@ -31,18 +22,6 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 			this.element.append(this.#listElement);
 		}
 		return this.#listElement;
-	}
-
-	// TODO different types for flat list with levels
-	get ordered() {
-		return this.#config?.ordered ?? false;
-	}
-
-	get itemConfig(): ITextConfig {
-		return {
-			inlineToolbox: this.#config?.inlineToolbox,
-			class: this.#config?.itemClass,
-		};
 	}
 
 	createListItem(): ListItemBlock {
@@ -58,17 +37,8 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 				item.depth -= 1;
 			},
 		});
-		li.configure(this.itemConfig);
+		li.inlineToolbox = this.inlineToolbox;
 		return li;
-	}
-
-	override configure(config: IConfig): void {
-		super.configure(config);
-		this.#config = config;
-		if (config.class?.length) {
-			this.element.classList.add(...config.class);
-		}
-		this.appendBlock(this.createListItem());
 	}
 
 	override onEmpty(): void {
@@ -80,7 +50,7 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		this.destroy();
 	}
 
-	override onItemEmptyEnter(block: Block<unknown>): void {
+	override onItemEmptyEnter(block: Block): void {
 		super.onItemEmptyEnter(block);
 		if (!this.parent || this.childrenRoot.lastElementChild !== block.element) {
 			return;
@@ -95,7 +65,7 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		this.removeBlock(block);
 	}
 
-	override onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
+	override onItemSplit(block: Block, cutFragment: () => DocumentFragment): void {
 		super.onItemSplit(block, cutFragment);
 		const li = this.createListItem();
 		li.defaultEditableElement.append(cutFragment());

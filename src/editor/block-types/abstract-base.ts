@@ -1,7 +1,6 @@
 import type CollectionBlock from './collection';
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-export default abstract class Block<T = undefined> {
+export default abstract class Block {
 	#root: HTMLElement;
 	#parent: CollectionBlock | null = null;
 	typeName?: string;
@@ -20,7 +19,7 @@ export default abstract class Block<T = undefined> {
 	/**
 	 * Get parent collection block.
 	 */
-	set parent(parent: CollectionBlock<unknown> | null) {
+	set parent(parent: CollectionBlock | null) {
 		this.#parent = parent;
 	}
 
@@ -38,13 +37,6 @@ export default abstract class Block<T = undefined> {
 	get defaultEditableElement(): HTMLElement | null {
 		// for overriding
 		return null;
-	}
-
-	/**
-	 * Called just after block creation and before inserting it into the DOM.
-	 */
-	configure(config: T) {
-		// for overriding, no default implementation
 	}
 
 	/**

@@ -17,7 +17,7 @@ if (!root) {
 const editor = new Editor();
 const inlineToolbox = new InlineToolbox([new InlineBold(), new InlineItalic(), new InlineLink()]);
 
-function withToolbox<B extends Block<unknown> & { set inlineToolbox(arg: InlineToolbox | undefined) }>(block: B): B {
+function withToolbox<B extends Block & { set inlineToolbox(arg: InlineToolbox | undefined) }>(block: B): B {
 	block.inlineToolbox = inlineToolbox;
 	return block;
 }
@@ -25,21 +25,17 @@ function withToolbox<B extends Block<unknown> & { set inlineToolbox(arg: InlineT
 ['h2', 'h3', 'h4'].forEach((tag) => {
 	editor.registerBlockType(tag, (t) => withToolbox(new TextBlock(t)));
 });
-editor.registerBlockType('p', () => {
-	const block = new TextBlock('p');
-	block.configure({
-		olBlockType: 'ol',
-		ulBlockType: 'ul',
-	});
-	return withToolbox(block);
-});
 editor.registerBlockType('ul', () => withToolbox(new ListBlock()));
 editor.registerBlockType('ol', () => withToolbox(new ListBlock(true)));
-
-editor.configure({
-	defaultBlockType: 'p',
-	rootClass: ['editor-root'],
+editor.registerBlockType('p', () => {
+	const block = withToolbox(new TextBlock('p'));
+	block.ulBlockTypeName = 'ul';
+	block.olBlockTypeName = 'ol';
+	return block;
 });
+
+editor.defaultBlockType = 'p';
+editor.element.classList.add('editor-root');
 
 editor.appendBlock('p');
 

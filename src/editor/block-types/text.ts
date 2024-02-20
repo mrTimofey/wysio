@@ -5,21 +5,13 @@ import type InlineToolbox from '../inline-toolbox';
 import CollectionBlock from './collection';
 import { getCaretRect, setCaretToEnd, setCaretToStart } from '../../caret-utils';
 
-export interface IConfig {
-	inlineToolbox?: InlineToolbox;
-	class?: string[];
-	tag?: string;
-	ulBlockType?: string;
-	olBlockType?: string;
-}
-
 const NUM_CHAR_CODES = ['0'.charCodeAt(0), '9'.charCodeAt(0)];
 
 /**
  * Extract previous block within a parent chain.
  * If a passed block is not the first one just return previous. Otherwise, check next parent collection.
  */
-function getPreviousEditableBlock(block: Block<unknown> | null): Block<unknown> | null {
+function getPreviousEditableBlock(block: Block | null): Block | null {
 	if (!(block?.parent instanceof CollectionBlock)) {
 		return null;
 	}
@@ -27,16 +19,14 @@ function getPreviousEditableBlock(block: Block<unknown> | null): Block<unknown> 
 	return index > 0 ? block.parent.getBlock(index - 1) : getPreviousEditableBlock(block.parent);
 }
 
-export default class TextBlock extends Block<IConfig> {
+export default class TextBlock extends Block {
 	#inlineToolbox?: InlineToolbox;
 	#editableBlock: EditableBlock;
 	// TODO move to its own module
-	#convertBlockTypes = {
-		ul: '',
-		ol: '',
-	};
+	ulBlockTypeName = '';
+	olBlockTypeName = '';
 
-	constructor(private tag = 'div') {
+	constructor(tag = 'div') {
 		super(tag);
 		this.#editableBlock = new EditableBlock(document.createElement('div'));
 		this.element.append(this.#editableBlock.element);
@@ -52,22 +42,6 @@ export default class TextBlock extends Block<IConfig> {
 		this.#editableBlock.on('emptyEnter', this.onEmptyEnter);
 		this.#editableBlock.on('mergeWithPrevious', this.onMergeWithPrevious);
 		this.#editableBlock.on('focusMove', this.onFocusMove);
-	}
-
-	override configure(config: IConfig): void {
-		super.configure(config);
-		if (config.class?.length) {
-			this.element.classList.add(...config.class);
-		}
-		if (config.tag) {
-			// here we can make an additional tag to make it look like paragraph, h1, h2, etc.
-			const element = document.createElement(config.tag);
-			element.append(this.#editableBlock.element);
-			this.element.append(element);
-		}
-		this.#convertBlockTypes.ul = config.ulBlockType || '';
-		this.#convertBlockTypes.ol = config.olBlockType || '';
-		this.inlineToolbox = config.inlineToolbox;
 	}
 
 	override get defaultEditableElement(): HTMLElement {
@@ -104,7 +78,7 @@ export default class TextBlock extends Block<IConfig> {
 			}
 			// ...convert '* ' or '- ' to UL
 			if (
-				this.#convertBlockTypes.ul &&
+				this.ulBlockTypeName &&
 				[
 					// for Chromium and friends
 					'*\u00a0',
@@ -114,10 +88,10 @@ export default class TextBlock extends Block<IConfig> {
 					'- ',
 				].includes(text)
 			) {
-				this.parent.convertTo(this, this.#convertBlockTypes.ul);
+				this.parent.convertTo(this, this.ulBlockTypeName);
 			}
 			// ...convert '1. ' or '1) ' to OL
-			else if (this.#convertBlockTypes.ol) {
+			else if (this.olBlockTypeName) {
 				const firstCharCode = text.charCodeAt(0);
 				if (
 					// first char is numeric
@@ -131,7 +105,7 @@ export default class TextBlock extends Block<IConfig> {
 						' ',
 					].includes(text.charAt(2))
 				) {
-					this.parent.convertTo(this, this.#convertBlockTypes.ol);
+					this.parent.convertTo(this, this.olBlockTypeName);
 				}
 			}
 		}

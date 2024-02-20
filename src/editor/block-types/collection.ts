@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Block from './abstract-base';
 
-export default class CollectionBlock<T = undefined> extends Block<T> {
+export default class CollectionBlock extends Block {
 	#blocks: Map<HTMLElement, Block>;
 
 	constructor() {
@@ -50,7 +50,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 * Add a block to the end of this collection.
 	 * @param block block instance
 	 */
-	appendBlock(block: Block<unknown>) {
+	appendBlock(block: Block) {
 		this.beforeBlockInsert(block);
 		this.childrenRoot.append(block.element);
 		block.parent = this;
@@ -61,7 +61,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 * @param afterIndex index to insert after
 	 * @param block block instance
 	 */
-	insertBlock(afterIndex: number, block: Block<unknown>): void {
+	insertBlock(afterIndex: number, block: Block): void {
 		this.beforeBlockInsert(block);
 		this.childrenRoot.children[afterIndex].after(block.element);
 	}
@@ -71,7 +71,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 * If collection becomes empty - delete the collection itself.
 	 * @param indexOrBlock block index or instance
 	 */
-	removeBlock(indexOrBlock: number | Block<unknown>): void {
+	removeBlock(indexOrBlock: number | Block): void {
 		const block = typeof indexOrBlock === 'number' ? this.#blocks.get(this.childrenRoot.children[indexOrBlock] as HTMLElement) : indexOrBlock;
 		if (!block) {
 			return;
@@ -103,7 +103,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 * Get block by index.
 	 * @param index block index
 	 */
-	getBlock(index: number): Block<unknown> | null {
+	getBlock(index: number): Block | null {
 		return this.#blocks.get(this.childrenRoot.children[index] as HTMLElement) || null;
 	}
 
@@ -111,7 +111,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 * Get block index.
 	 * @param block block instance
 	 */
-	getBlockIndex(block: Block<unknown>): number {
+	getBlockIndex(block: Block): number {
 		for (let i = 0; i < this.childrenRoot.children.length; i += 1) {
 			if (this.childrenRoot.children[i] === block.element) {
 				return i;
@@ -124,7 +124,7 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 	 * Returns the block associated with the given HTML element.
 	 * @param el HTML element to find the block for
 	 */
-	getBlockByElement(el: HTMLElement): Block<unknown> | null {
+	getBlockByElement(el: HTMLElement): Block | null {
 		return this.#blocks.get(el) || null;
 	}
 
@@ -132,20 +132,20 @@ export default class CollectionBlock<T = undefined> extends Block<T> {
 		// for overriding
 	}
 
-	beforeBlockInsert(block: Block<unknown>): void {
+	beforeBlockInsert(block: Block): void {
 		this.#blocks.set(block.element, block);
 		block.parent = this;
 	}
 
-	onItemEmptyEnter(block: Block<unknown>): void {
+	onItemEmptyEnter(block: Block): void {
 		// for overriding
 	}
 
-	onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
+	onItemSplit(block: Block, cutFragment: () => DocumentFragment): void {
 		// for overriding
 	}
 
-	convertTo(block: Block<unknown>, type: string): void {
+	convertTo(block: Block, type: string): void {
 		// for overriding
 	}
 }

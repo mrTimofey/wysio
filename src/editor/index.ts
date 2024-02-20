@@ -1,23 +1,19 @@
 import CollectionBlock from './block-types/collection';
 import type Block from './block-types/abstract-base';
 
-interface IEditorConfig {
-	defaultBlockType?: string;
-	rootClass?: string[];
-}
-
-export default class Editor extends CollectionBlock<IEditorConfig> {
-	#typeFactoryFns: { [name: string]: (name: string) => Block<unknown> } = {};
+export default class Editor extends CollectionBlock {
+	#typeFactoryFns: { [name: string]: (name: string) => Block } = {};
 	#blockTypeSelector = document.createElement('div');
 	#childrenRoot = document.createElement('div');
-	#defaultBlockType = '';
 	#currentBlockIndex = -1;
+
+	defaultBlockType = '';
 
 	protected override get childrenRoot(): HTMLElement {
 		return this.#childrenRoot;
 	}
 
-	constructor(config?: IEditorConfig) {
+	constructor() {
 		super();
 		this.#blockTypeSelector.classList.add('editor-block-type-selector');
 		this.#blockTypeSelector.style.position = 'absolute';
@@ -29,17 +25,6 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		this.onChildMouseEnter = this.onChildMouseEnter.bind(this);
 		this.onMouseLeave = this.onMouseLeave.bind(this);
 		this.element.addEventListener('mouseleave', this.onMouseLeave);
-		if (config) {
-			this.configure(config);
-		}
-	}
-
-	override configure(config: IEditorConfig): void {
-		super.configure(config);
-		this.#defaultBlockType = config?.defaultBlockType || '';
-		if (config.rootClass) {
-			this.element.classList.add(...config.rootClass);
-		}
 	}
 
 	/**
@@ -47,7 +32,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	 * @param name name used as a key for a block data
 	 * @param factoryFn block factory function
 	 */
-	registerBlockType<N extends string, T extends Block<unknown>>(name: N, factoryFn: (name: N) => T) {
+	registerBlockType<N extends string, T extends Block>(name: N, factoryFn: (name: N) => T) {
 		this.#typeFactoryFns[name] = factoryFn as (name: string) => T;
 		const btn = document.createElement('button');
 		btn.classList.add('editor-block-type-selector__item');
@@ -64,7 +49,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	 * Add a block to the end of this collection. If block is a string - create a block by type.
 	 * @param block block instance or block type name
 	 */
-	override appendBlock<T extends Block<unknown> = Block<unknown>>(block: T | string): T {
+	override appendBlock<T extends Block>(block: T | string): T {
 		const blockObj = typeof block === 'string' ? this.createBlockByType(block) : block;
 		super.appendBlock(blockObj);
 		return blockObj as T;
@@ -74,7 +59,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	 * Create a block based on the given typeName.
 	 * @param typeName block type name
 	 */
-	createBlockByType(typeName: string): Block<unknown> {
+	createBlockByType(typeName: string): Block {
 		if (!this.#typeFactoryFns[typeName]) {
 			throw new Error(`Editor: type "${typeName}" is not registered`);
 		}
@@ -83,7 +68,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		return block;
 	}
 
-	insertBlockAfterCurrent(block: Block<unknown>): void {
+	insertBlockAfterCurrent(block: Block): void {
 		this.insertBlock(this.#currentBlockIndex, block);
 	}
 
@@ -106,27 +91,27 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	override onEmpty(): void {
 		super.onEmpty();
 		// TODO: let user create element for empty editor instead
-		this.appendBlock(this.createBlockByType(this.#defaultBlockType));
+		this.appendBlock(this.createBlockByType(this.defaultBlockType));
 	}
 
-	override beforeBlockInsert(block: Block<unknown>): void {
+	override beforeBlockInsert(block: Block): void {
 		super.beforeBlockInsert(block);
 		block.element.addEventListener('mouseenter', this.onChildMouseEnter);
 	}
 
-	override onItemEmptyEnter(block: Block<unknown>): void {
+	override onItemEmptyEnter(block: Block): void {
 		super.onItemEmptyEnter(block);
-		if (block.typeName === this.#defaultBlockType) {
+		if (block.typeName === this.defaultBlockType) {
 			return;
 		}
-		const newBlock = this.createBlockByType(this.#defaultBlockType);
+		const newBlock = this.createBlockByType(this.defaultBlockType);
 		this.insertBlock(this.getBlockIndex(block), newBlock);
 		newBlock.defaultEditableElement?.focus();
 	}
 
-	override onItemSplit(block: Block<unknown>, cutFragment: () => DocumentFragment): void {
+	override onItemSplit(block: Block, cutFragment: () => DocumentFragment): void {
 		super.onItemSplit(block, cutFragment);
-		const newBlock = this.createBlockByType(this.#defaultBlockType);
+		const newBlock = this.createBlockByType(this.defaultBlockType);
 		this.insertBlock(this.getBlockIndex(block), newBlock);
 		if (newBlock.defaultEditableElement) {
 			newBlock.defaultEditableElement.append(cutFragment());
@@ -135,7 +120,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 		}
 	}
 
-	override convertTo(block: Block<unknown>, type: string): void {
+	override convertTo(block: Block, type: string): void {
 		const contents = block.defaultEditableElement?.children;
 		if (!contents) {
 			return;
