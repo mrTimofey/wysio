@@ -1,6 +1,6 @@
 import Block from './abstract-base';
-import type { IBlockEvents } from '../editable-block';
-import EditableBlock from '../editable-block';
+import type { ITextboxEvents } from '../rich-textbox';
+import RichTextbox from '../rich-textbox';
 import type InlineToolbox from '../inline-toolbox';
 import CollectionBlock from './collection';
 import { getCaretRect, setCaretToEnd, setCaretToStart } from '../../caret-utils';
@@ -21,15 +21,15 @@ function getPreviousEditableBlock(block: Block | null): Block | null {
 
 export default class TextBlock extends Block {
 	#inlineToolbox?: InlineToolbox;
-	#editableBlock: EditableBlock;
+	#textbox: RichTextbox;
 	// TODO move to its own module
 	ulBlockTypeName = '';
 	olBlockTypeName = '';
 
 	constructor(tag = 'div') {
 		super(tag);
-		this.#editableBlock = new EditableBlock(document.createElement('div'));
-		this.element.append(this.#editableBlock.element);
+		this.#textbox = new RichTextbox(document.createElement('div'));
+		this.element.append(this.#textbox.element);
 		// bind listener methods so they will have access to this
 		this.updateToolboxRange = this.updateToolboxRange.bind(this);
 		this.onInput = this.onInput.bind(this);
@@ -37,39 +37,39 @@ export default class TextBlock extends Block {
 		this.onEmptyEnter = this.onEmptyEnter.bind(this);
 		this.onMergeWithPrevious = this.onMergeWithPrevious.bind(this);
 		this.onFocusMove = this.onFocusMove.bind(this);
-		this.#editableBlock.element.addEventListener('input', this.onInput as (e: Event) => void);
-		this.#editableBlock.on('split', this.onSplit);
-		this.#editableBlock.on('emptyEnter', this.onEmptyEnter);
-		this.#editableBlock.on('mergeWithPrevious', this.onMergeWithPrevious);
-		this.#editableBlock.on('focusMove', this.onFocusMove);
+		this.#textbox.element.addEventListener('input', this.onInput as (e: Event) => void);
+		this.#textbox.on('split', this.onSplit);
+		this.#textbox.on('emptyEnter', this.onEmptyEnter);
+		this.#textbox.on('mergeWithPrevious', this.onMergeWithPrevious);
+		this.#textbox.on('focusMove', this.onFocusMove);
 	}
 
 	override get defaultEditableElement(): HTMLElement {
-		return this.#editableBlock.element;
+		return this.#textbox.element;
 	}
 
 	set inlineToolbox(toolbox: InlineToolbox | undefined) {
 		if (this.#inlineToolbox) {
-			this.#editableBlock.off('selectionChange', this.updateToolboxRange);
+			this.#textbox.off('selectionChange', this.updateToolboxRange);
 			this.#inlineToolbox = undefined;
 		}
 		if (!toolbox) {
 			return;
 		}
 		this.#inlineToolbox = toolbox;
-		this.#editableBlock.on('selectionChange', this.updateToolboxRange);
+		this.#textbox.on('selectionChange', this.updateToolboxRange);
 	}
 
 	get inlineToolbox() {
 		return this.#inlineToolbox;
 	}
 
-	private updateToolboxRange({ range }: IBlockEvents['selectionChange']) {
-		this.#inlineToolbox?.attachToRange(range, this.#editableBlock);
+	private updateToolboxRange({ range }: ITextboxEvents['selectionChange']) {
+		this.#inlineToolbox?.attachToRange(range, this.#textbox);
 	}
 
 	private onInput(event: InputEvent) {
-		const el = this.#editableBlock.element;
+		const el = this.#textbox.element;
 		// when only first 2 or 3 symbols are typed and the last one is a space character...
 		if (this.parent && event.data === ' ' && el.firstChild instanceof Text) {
 			const text = el.firstChild.textContent;
@@ -111,7 +111,7 @@ export default class TextBlock extends Block {
 		}
 	}
 
-	private onSplit({ cutFragment }: IBlockEvents['split']) {
+	private onSplit({ cutFragment }: ITextboxEvents['split']) {
 		this.parent?.onItemSplit(this, cutFragment);
 	}
 
@@ -119,7 +119,7 @@ export default class TextBlock extends Block {
 		this.parent?.onItemEmptyEnter(this);
 	}
 
-	private onMergeWithPrevious({ cutFragment }: IBlockEvents['mergeWithPrevious']) {
+	private onMergeWithPrevious({ cutFragment }: ITextboxEvents['mergeWithPrevious']) {
 		if (!this.parent) {
 			return;
 		}
@@ -154,7 +154,7 @@ export default class TextBlock extends Block {
 		this.parent.removeBlock(this);
 	}
 
-	private onFocusMove({ direction }: IBlockEvents['focusMove']) {
+	private onFocusMove({ direction }: ITextboxEvents['focusMove']) {
 		let currentParent = this.parent;
 		if (!currentParent) {
 			return;

@@ -7,7 +7,7 @@ export default abstract class InlineToolboxSwitch extends Base {
 	rangeChanged() {
 		let rangeNode: Node | null = this.range?.commonAncestorContainer || null;
 		this.element.classList.remove(this.activeClass);
-		while (rangeNode && rangeNode !== this.toolbox?.block?.element) {
+		while (rangeNode && rangeNode !== this.toolbox?.textbox?.element) {
 			if (this.checkNode(rangeNode)) {
 				this.element.classList.add(this.activeClass);
 				return;

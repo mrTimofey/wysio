@@ -1,23 +1,23 @@
-import type EditableBlock from './editable-block';
+import type RichTextbox from './rich-textbox';
 import type InlineToolboxItem from './toolbox-items/abstract-base';
 import './toolbox.styl';
 
 export default class InlineToolbox {
-	private el: HTMLElement;
-	private fakeRangeEl = document.createElement('div');
-	private currentRange: Range | null = null;
-	private currentBlock: EditableBlock | null = null;
+	#el: HTMLElement;
+	#fakeRangeEl = document.createElement('div');
+	#currentRange: Range | null = null;
+	#currentTextbox: RichTextbox | null = null;
 
 	get element() {
-		return this.el;
+		return this.#el;
 	}
 
 	get range() {
-		return this.currentRange;
+		return this.#currentRange;
 	}
 
-	get block() {
-		return this.currentBlock;
+	get textbox() {
+		return this.#currentTextbox;
 	}
 
 	constructor(
@@ -25,21 +25,21 @@ export default class InlineToolbox {
 		el?: HTMLElement,
 	) {
 		if (el) {
-			this.el = el;
+			this.#el = el;
 		} else {
 			const newEl = document.createElement('div');
 			document.body.append(newEl);
-			this.el = newEl;
+			this.#el = newEl;
 		}
 		const innerDiv = document.createElement('div');
 		innerDiv.classList.add('editor-inline-toolbox__box');
 		const itemGroup = document.createElement('div');
 		itemGroup.classList.add('editor-inline-toolbox__items');
-		this.el.style.position = 'absolute';
-		this.el.classList.add('editor-inline-toolbox');
-		this.el.append(innerDiv);
+		this.#el.style.position = 'absolute';
+		this.#el.classList.add('editor-inline-toolbox');
+		this.#el.append(innerDiv);
 		innerDiv.append(itemGroup);
-		this.fakeRangeEl.classList.add('editor-fake-range');
+		this.#fakeRangeEl.classList.add('editor-fake-range');
 		this.hide();
 		for (const item of items) {
 			itemGroup.append(item.element);
@@ -60,28 +60,28 @@ export default class InlineToolbox {
 			rectEl.style.left = `${rect.left}px`;
 			rectEl.style.width = `${rect.width}px`;
 			rectEl.style.height = `${rect.height}px`;
-			this.fakeRangeEl.append(rectEl);
+			this.#fakeRangeEl.append(rectEl);
 		}
-		document.body.append(this.fakeRangeEl);
+		document.body.append(this.#fakeRangeEl);
 	}
 
 	private hideFakeRange() {
-		this.fakeRangeEl.innerHTML = '';
-		this.fakeRangeEl.remove();
+		this.#fakeRangeEl.innerHTML = '';
+		this.#fakeRangeEl.remove();
 	}
 
 	hide() {
-		this.el.style.display = 'none';
+		this.#el.style.display = 'none';
 		this.hideFakeRange();
 	}
 
 	show() {
-		this.el.style.removeProperty('display');
+		this.#el.style.removeProperty('display');
 	}
 
 	public restoreRange() {
 		this.hideFakeRange();
-		if (!this.currentRange) {
+		if (!this.#currentRange) {
 			return;
 		}
 		const selection = window.getSelection();
@@ -89,13 +89,13 @@ export default class InlineToolbox {
 			return;
 		}
 		selection.removeAllRanges();
-		selection.addRange(this.currentRange);
+		selection.addRange(this.#currentRange);
 	}
 
 	private hideOnClickOutside() {
 		const onClick = (e: MouseEvent) => {
 			const target = e.target as Node;
-			if (target && (this.el === target || this.el.contains(target))) {
+			if (target && (this.#el === target || this.#el.contains(target))) {
 				return;
 			}
 			this.hide();
@@ -104,29 +104,29 @@ export default class InlineToolbox {
 		window.addEventListener('mousedown', onClick);
 	}
 
-	attachToRange(range: Range | null, block: EditableBlock) {
+	attachToRange(range: Range | null, textbox: RichTextbox) {
 		if (!range || range.collapsed) {
 			// wait for a focus change
 			setTimeout(() => {
 				// if user interacts with the toolbox
-				if (this.el === document.activeElement || this.el.contains(document.activeElement)) {
+				if (this.#el === document.activeElement || this.#el.contains(document.activeElement)) {
 					this.hideOnClickOutside();
 					// a range within a contenteditable element is lost so draw a fake range so user can still see it
 					this.showFakeRange();
 					return;
 				}
 				this.hide();
-				this.currentRange = null;
-				this.currentBlock = null;
+				this.#currentRange = null;
+				this.#currentTextbox = null;
 			});
 			return;
 		}
-		this.currentRange = range;
-		this.currentBlock = block;
+		this.#currentRange = range;
+		this.#currentTextbox = textbox;
 		const rect = range.getBoundingClientRect();
-		this.el.style.top = `${rect.bottom}px`;
-		this.el.style.left = `${rect.left}px`;
-		this.el.style.width = `${rect.width}px`;
+		this.#el.style.top = `${rect.bottom}px`;
+		this.#el.style.left = `${rect.left}px`;
+		this.#el.style.width = `${rect.width}px`;
 		for (const item of this.items) {
 			item.rangeChanged();
 		}

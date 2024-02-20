@@ -74,7 +74,7 @@ export default class InlineToolboxLink extends Base {
 		let rangeNode: Node | null = this.range?.commonAncestorContainer || null;
 		this.element.classList.remove(this.activeClass);
 		this.resetAndHideForm();
-		while (rangeNode && rangeNode !== this.toolbox?.block?.element) {
+		while (rangeNode && rangeNode !== this.toolbox?.textbox?.element) {
 			if (this.checkNode(rangeNode)) {
 				this.element.classList.add(this.activeClass);
 				return;
@@ -115,7 +115,7 @@ export default class InlineToolboxLink extends Base {
 		});
 		a.append(rangeContents);
 		this.range.insertNode(a);
-		this.toolbox?.block?.element.normalize();
+		this.toolbox?.textbox?.element.normalize();
 	}
 
 	removeLink() {
@@ -123,10 +123,10 @@ export default class InlineToolboxLink extends Base {
 			return;
 		}
 		let rangeNode: Node | null = this.range?.commonAncestorContainer || null;
-		while (rangeNode && rangeNode !== this.toolbox?.block?.element) {
+		while (rangeNode && rangeNode !== this.toolbox?.textbox?.element) {
 			if (this.checkNode(rangeNode)) {
 				rangeNode.replaceWith(...Array.from(rangeNode.childNodes));
-				this.toolbox?.block?.element.normalize();
+				this.toolbox?.textbox?.element.normalize();
 				return;
 			}
 			rangeNode = rangeNode.parentElement;

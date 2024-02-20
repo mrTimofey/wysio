@@ -1,15 +1,15 @@
 import type InlineToolbox from '../inline-toolbox';
 
 export default abstract class InlineToolboxItem {
-	private el: HTMLButtonElement = document.createElement('button');
-	private tlbx: InlineToolbox | null = null;
+	#el: HTMLButtonElement = document.createElement('button');
+	#toolbox: InlineToolbox | null = null;
 
 	get element() {
-		return this.el;
+		return this.#el;
 	}
 
 	protected get toolbox() {
-		return this.tlbx;
+		return this.#toolbox;
 	}
 
 	protected get range() {
@@ -33,6 +33,6 @@ export default abstract class InlineToolboxItem {
 	}
 
 	setToolbox(toolbox: InlineToolbox) {
-		this.tlbx = toolbox;
+		this.#toolbox = toolbox;
 	}
 }

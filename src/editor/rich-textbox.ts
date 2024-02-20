@@ -1,6 +1,6 @@
 import { isCaretOnFirstLine, isCaretOnLastLine, isCaretOnStart, isCaretOnEnd } from '../caret-utils';
 
-export interface IBlockEvents {
+export interface ITextboxEvents {
 	// user pressed enter somewhere within editable block content cutting it into 2 slices
 	split: { cutFragment: () => DocumentFragment };
 	// user pressed enter on empty editable block
@@ -13,7 +13,7 @@ export interface IBlockEvents {
 	focusMove: { direction: 'up' | 'down' | 'left' | 'right' };
 }
 
-export default class EditableBlock {
+export default class RichTextbox {
 	private listeners: {
 		[event: string]: Set<(arg: unknown) => unknown>;
 	} = {};
@@ -49,21 +49,21 @@ export default class EditableBlock {
 		this.el.innerHTML = data.content;
 	}
 
-	public on<T extends keyof IBlockEvents = keyof IBlockEvents>(event: T, listener: (arg: IBlockEvents[T]) => unknown) {
+	public on<T extends keyof ITextboxEvents = keyof ITextboxEvents>(event: T, listener: (arg: ITextboxEvents[T]) => unknown) {
 		if (!this.listeners[event]) {
 			this.listeners[event] = new Set();
 		}
 		this.listeners[event].add(listener as (arg: unknown) => unknown);
 	}
 
-	public off<T extends keyof IBlockEvents = keyof IBlockEvents>(event: T, listener: (arg: IBlockEvents[T]) => unknown) {
+	public off<T extends keyof ITextboxEvents = keyof ITextboxEvents>(event: T, listener: (arg: ITextboxEvents[T]) => unknown) {
 		if (!this.listeners[event]) {
 			return;
 		}
 		this.listeners[event].delete(listener as (arg: unknown) => unknown);
 	}
 
-	public emit<T extends keyof IBlockEvents = keyof IBlockEvents>(event: T, arg: IBlockEvents[T]) {
+	public emit<T extends keyof ITextboxEvents = keyof ITextboxEvents>(event: T, arg: ITextboxEvents[T]) {
 		this.listeners[event]?.forEach((fn) => fn(arg));
 	}
 
