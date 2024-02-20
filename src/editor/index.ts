@@ -1,15 +1,13 @@
 import CollectionBlock from './block-types/collection';
 import type Block from './block-types/abstract-base';
 
-type BlocksDefinition = { [name: string]: { Ctor: { new (): Block<unknown> }; args?: unknown } };
-
 interface IEditorConfig {
 	defaultBlockType?: string;
 	rootClass?: string[];
 }
 
 export default class Editor extends CollectionBlock<IEditorConfig> {
-	#types: BlocksDefinition = {};
+	#typeFactoryFns: { [name: string]: (name: string) => Block<unknown> } = {};
 	#blockTypeSelector = document.createElement('div');
 	#childrenRoot = document.createElement('div');
 	#defaultBlockType = '';
@@ -47,11 +45,10 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	/**
 	 * Register a block type to make it accessible for a user to select from.
 	 * @param name name used as a key for a block data
-	 * @param ctor block class
-	 * @param args block configuration
+	 * @param factoryFn block factory function
 	 */
-	registerBlockType<P, T extends Block<P>>(name: string, Ctor: { new (): T }, args?: P): void {
-		this.#types[name] = { Ctor, args };
+	registerBlockType<N extends string, T extends Block<unknown>>(name: N, factoryFn: (name: N) => T) {
+		this.#typeFactoryFns[name] = factoryFn as (name: string) => T;
 		const btn = document.createElement('button');
 		btn.classList.add('editor-block-type-selector__item');
 		btn.type = 'button';
@@ -78,12 +75,11 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 	 * @param typeName block type name
 	 */
 	createBlockByType(typeName: string): Block<unknown> {
-		if (!this.#types[typeName]) {
+		if (!this.#typeFactoryFns[typeName]) {
 			throw new Error(`Editor: type "${typeName}" is not registered`);
 		}
-		const { Ctor, args } = this.#types[typeName];
-		const block = new Ctor();
-		block.configure(args);
+		const block = this.#typeFactoryFns[typeName](typeName);
+		block.typeName = typeName;
 		return block;
 	}
 
@@ -109,6 +105,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 
 	override onEmpty(): void {
 		super.onEmpty();
+		// TODO: let user create element for empty editor instead
 		this.appendBlock(this.createBlockByType(this.#defaultBlockType));
 	}
 
@@ -119,7 +116,7 @@ export default class Editor extends CollectionBlock<IEditorConfig> {
 
 	override onItemEmptyEnter(block: Block<unknown>): void {
 		super.onItemEmptyEnter(block);
-		if (this.#types[this.#defaultBlockType] && block instanceof this.#types[this.#defaultBlockType].Ctor) {
+		if (block.typeName === this.#defaultBlockType) {
 			return;
 		}
 		const newBlock = this.createBlockByType(this.#defaultBlockType);

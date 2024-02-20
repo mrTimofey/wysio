@@ -1,6 +1,50 @@
+import type { Page } from '@playwright/test';
 import { test, expect } from '@playwright/test';
 
 const TEXT = 'Text is going to be here';
+
+function repeat(times: number, fn: () => Promise<void>) {
+	let promise = Promise.resolve();
+	for (let i = 0; i < times; i += 1) {
+		promise = promise.then(fn);
+	}
+	return promise;
+}
+
+async function createDocumentWithLevels(page: Page) {
+	page.getByRole('textbox').focus();
+	const input = page.locator('*:focus');
+
+	await repeat(3, async () => {
+		await input.fill(TEXT);
+		await input.press('Enter');
+	});
+
+	await input.pressSequentially(`* ${TEXT}`);
+
+	await repeat(2, async () => {
+		await input.press('Enter');
+		await input.fill(TEXT);
+	});
+
+	await repeat(2, async () => {
+		await input.press('Enter');
+		await input.press('Tab');
+
+		await repeat(3, async () => {
+			await input.press('Enter');
+			await input.fill(TEXT);
+		});
+	});
+
+	await input.press('Enter');
+
+	await repeat(2, async () => {
+		await input.press('Shift+Tab');
+		await input.fill(TEXT);
+		await input.press('Enter');
+	});
+}
 
 test.beforeEach(async ({ page }) => {
 	await page.goto('http://localhost:5174/');
@@ -33,11 +77,16 @@ test('new paragraph is not created when current one is empty', async ({ page }) 
 	{ type: 'ol', starters: ['1. ', '1) ', '9. ', '9) '] },
 ].forEach(({ type, starters }) => {
 	starters.forEach((starter) => {
-		test(`paragraph becomes a 'ul li' item when user starts typing with "${starter}"`, async ({ page }) => {
+		test(`paragraph becomes a '${type} li' item when user starts typing with "${starter}"`, async ({ page }) => {
 			const p = page.getByRole('textbox');
 			await p.pressSequentially(`${starter}${TEXT}`);
 			const li = page.locator(`${type} li *:focus`);
 			await expect(li).toContainText(TEXT);
 		});
 	});
+});
+
+test.skip('test smth', async ({ page }) => {
+	await createDocumentWithLevels(page);
+	expect(true).toBe(true);
 });

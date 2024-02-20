@@ -6,6 +6,7 @@ import TextBlock from './editor/block-types/text';
 import ListBlock from './editor/block-types/list';
 import Editor from './editor';
 import './text.styl';
+import type Block from './editor/block-types/abstract-base';
 
 const root = document.getElementById('app');
 
@@ -13,35 +14,28 @@ if (!root) {
 	throw new Error('Nope');
 }
 
-const inlineToolbox = new InlineToolbox([new InlineBold(), new InlineItalic(), new InlineLink()]);
 const editor = new Editor();
-editor.registerBlockType('h2', TextBlock, {
-	inlineToolbox,
-	tag: 'h2',
+const inlineToolbox = new InlineToolbox([new InlineBold(), new InlineItalic(), new InlineLink()]);
+
+function withToolbox<B extends Block<unknown> & { set inlineToolbox(arg: InlineToolbox | undefined) }>(block: B): B {
+	block.inlineToolbox = inlineToolbox;
+	return block;
+}
+
+['h2', 'h3', 'h4'].forEach((tag) => {
+	editor.registerBlockType(tag, (t) => withToolbox(new TextBlock(t)));
 });
-editor.registerBlockType('h3', TextBlock, {
-	inlineToolbox,
-	tag: 'h3',
+editor.registerBlockType('p', () => {
+	const block = new TextBlock('p');
+	block.configure({
+		olBlockType: 'ol',
+		ulBlockType: 'ul',
+	});
+	return withToolbox(block);
 });
-editor.registerBlockType('h4', TextBlock, {
-	inlineToolbox,
-	tag: 'h4',
-});
-editor.registerBlockType('ol', ListBlock, {
-	inlineToolbox,
-	ordered: true,
-});
-editor.registerBlockType('ul', ListBlock, {
-	inlineToolbox,
-	ordered: false,
-});
-editor.registerBlockType('p', TextBlock, {
-	inlineToolbox,
-	tag: 'p',
-	// what block type to convert to on '* ' or '1. '
-	olBlockType: 'ol',
-	ulBlockType: 'ul',
-});
+editor.registerBlockType('ul', () => withToolbox(new ListBlock()));
+editor.registerBlockType('ol', () => withToolbox(new ListBlock(true)));
+
 editor.configure({
 	defaultBlockType: 'p',
 	rootClass: ['editor-root'],

@@ -13,8 +13,17 @@ export interface IConfig {
 }
 
 export default class ListBlock extends CollectionBlock<IConfig> {
+	inlineToolbox: InlineToolbox | undefined = undefined;
 	#listElement: HTMLUListElement | HTMLOListElement | null = null;
 	#config?: IConfig;
+
+	constructor(ordered = false, maxLevel: number = 0) {
+		super();
+		this.configure({
+			ordered,
+			maxLevel,
+		});
+	}
 
 	protected override get childrenRoot(): HTMLElement {
 		if (!this.#listElement) {
@@ -24,6 +33,7 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		return this.#listElement;
 	}
 
+	// TODO different types for flat list with levels
 	get ordered() {
 		return this.#config?.ordered ?? false;
 	}
@@ -35,61 +45,21 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 		};
 	}
 
-	get level() {
-		let listParentCount = 0;
-		const parent = this.parent;
-		while (parent?.parent && parent.parent instanceof ListBlock) {
-			listParentCount += 1;
-		}
-		return listParentCount;
-	}
-
 	createListItem(): ListItemBlock {
 		const li = new ListItemBlock({
 			onGoDeeper: (item) => {
-				if (this.level >= (this.#config?.maxLevel ?? Infinity)) {
+				const previousItem = this.getBlock(this.getBlockIndex(item) - 1);
+				if (!(previousItem instanceof ListItemBlock) || item.depth > previousItem.depth) {
 					return;
 				}
-				const previousListItemIdx = this.getBlockIndex(item);
-				const previousListItem = (() => {
-					if (previousListItemIdx > 0) {
-						return this.getBlock(previousListItemIdx - 1)!;
-					}
-					const emptyItem = this.createListItem();
-					this.appendBlock(emptyItem);
-					return emptyItem;
-				})();
-				const sub = this.createSubList();
-				previousListItem.element.append(sub.element);
-				sub.appendBlock(item);
-				// remove initial empty list item from the sub list
-				sub.removeBlock(0);
-				sub.defaultEditableElement?.focus();
+				item.depth += 1;
 			},
 			onGoUpper: (item) => {
-				if (!(this.parent instanceof ListBlock)) {
-					return;
-				}
-				item.parent?.removeBlock(item);
-				this.appendBlock(item);
+				item.depth -= 1;
 			},
 		});
 		li.configure(this.itemConfig);
 		return li;
-	}
-
-	appendListItem(): this {
-		this.appendBlock(this.createListItem());
-		return this;
-	}
-
-	createSubList(): ListBlock {
-		const sub = new ListBlock();
-		if (this.#config) {
-			sub.configure(this.#config);
-		}
-		sub.parent = this;
-		return sub;
 	}
 
 	override configure(config: IConfig): void {
@@ -107,7 +77,6 @@ export default class ListBlock extends CollectionBlock<IConfig> {
 			return;
 		}
 		this.parent.removeBlock(this);
-		this.element.remove();
 		this.destroy();
 	}
 

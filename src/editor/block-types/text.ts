@@ -86,6 +86,10 @@ export default class TextBlock extends Block<IConfig> {
 		this.#editableBlock.on('selectionChange', this.updateToolboxRange);
 	}
 
+	get inlineToolbox() {
+		return this.#inlineToolbox;
+	}
+
 	private updateToolboxRange({ range }: IBlockEvents['selectionChange']) {
 		this.#inlineToolbox?.attachToRange(range, this.#editableBlock);
 	}

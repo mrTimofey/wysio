@@ -4,6 +4,7 @@ import type CollectionBlock from './collection';
 export default abstract class Block<T = undefined> {
 	#root: HTMLElement;
 	#parent: CollectionBlock | null = null;
+	typeName?: string;
 
 	constructor(tag = 'div') {
 		this.#root = document.createElement(tag);
@@ -47,9 +48,9 @@ export default abstract class Block<T = undefined> {
 	}
 
 	/**
-	 * Called after this block is removed from blocks collection.
+	 * Called after this block is removed from editor.
 	 */
 	destroy() {
-		// for overriding, no default implementation
+		this.element.remove();
 	}
 }
