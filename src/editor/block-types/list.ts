@@ -1,11 +1,10 @@
-import type InlineToolbox from '../inline-toolbox';
 import type Block from './abstract-base';
 import CollectionBlock from './collection';
 import ListItemBlock from './list-item';
 
 export default class ListBlock extends CollectionBlock {
-	inlineToolbox: InlineToolbox | undefined = undefined;
 	#listElement: HTMLUListElement | HTMLOListElement | null = null;
+	#listItemAugmentations: ((block: ListItemBlock) => () => void)[] = [];
 
 	constructor(
 		// TODO different types for flat list with levels
@@ -37,7 +36,7 @@ export default class ListBlock extends CollectionBlock {
 				item.depth -= 1;
 			},
 		});
-		li.inlineToolbox = this.inlineToolbox;
+		li.augment(...this.#listItemAugmentations);
 		return li;
 	}
 
@@ -72,5 +71,15 @@ export default class ListBlock extends CollectionBlock {
 		li.defaultEditableElement.normalize();
 		this.insertBlock(this.getBlockIndex(block), li);
 		li.defaultEditableElement.focus();
+	}
+
+	augmentListItems(...augmentations: ((block: ListItemBlock) => () => void)[]): this {
+		this.#listItemAugmentations.push(...augmentations);
+		for (const block of this) {
+			if (block instanceof ListItemBlock) {
+				block.augment(...augmentations);
+			}
+		}
+		return this;
 	}
 }

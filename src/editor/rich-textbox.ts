@@ -14,13 +14,12 @@ export interface ITextboxEvents {
 }
 
 export default class RichTextbox {
-	private listeners: {
+	#listeners: {
 		[event: string]: Set<(arg: unknown) => unknown>;
 	} = {};
 
-	private selectionTrackingTimeout: ReturnType<Window['setTimeout']> | undefined;
-
-	private selectionRectangle: DOMRect | null = null;
+	#selectionTrackingTimeout: ReturnType<Window['setTimeout']> | undefined;
+	#selectionRectangle: DOMRect | null = null;
 
 	constructor(private el: HTMLElement) {
 		el.contentEditable = 'true';
@@ -50,21 +49,21 @@ export default class RichTextbox {
 	}
 
 	public on<T extends keyof ITextboxEvents = keyof ITextboxEvents>(event: T, listener: (arg: ITextboxEvents[T]) => unknown) {
-		if (!this.listeners[event]) {
-			this.listeners[event] = new Set();
+		if (!this.#listeners[event]) {
+			this.#listeners[event] = new Set();
 		}
-		this.listeners[event].add(listener as (arg: unknown) => unknown);
+		this.#listeners[event].add(listener as (arg: unknown) => unknown);
 	}
 
 	public off<T extends keyof ITextboxEvents = keyof ITextboxEvents>(event: T, listener: (arg: ITextboxEvents[T]) => unknown) {
-		if (!this.listeners[event]) {
+		if (!this.#listeners[event]) {
 			return;
 		}
-		this.listeners[event].delete(listener as (arg: unknown) => unknown);
+		this.#listeners[event].delete(listener as (arg: unknown) => unknown);
 	}
 
 	public emit<T extends keyof ITextboxEvents = keyof ITextboxEvents>(event: T, arg: ITextboxEvents[T]) {
-		this.listeners[event]?.forEach((fn) => fn(arg));
+		this.#listeners[event]?.forEach((fn) => fn(arg));
 	}
 
 	protected insertLineBreak() {
@@ -155,28 +154,28 @@ export default class RichTextbox {
 	protected checkSelection() {
 		const range = window.getSelection()?.getRangeAt(0) || null;
 		if (!range) {
-			if (this.selectionRectangle) {
-				this.selectionRectangle = null;
+			if (this.#selectionRectangle) {
+				this.#selectionRectangle = null;
 				this.emit('selectionChange', { range });
 			}
 			return;
 		}
 		const rect = range.getBoundingClientRect();
 		if (
-			this.selectionRectangle &&
-			rect.x === this.selectionRectangle.x &&
-			rect.y === this.selectionRectangle.y &&
-			rect.width === this.selectionRectangle.width &&
-			rect.height === this.selectionRectangle.height
+			this.#selectionRectangle &&
+			rect.x === this.#selectionRectangle.x &&
+			rect.y === this.#selectionRectangle.y &&
+			rect.width === this.#selectionRectangle.width &&
+			rect.height === this.#selectionRectangle.height
 		) {
 			return;
 		}
-		this.selectionRectangle = rect;
+		this.#selectionRectangle = rect;
 		this.emit('selectionChange', { range });
 	}
 
 	protected startSelectionTracking() {
-		this.selectionTrackingTimeout = window.setTimeout(() => {
+		this.#selectionTrackingTimeout = window.setTimeout(() => {
 			if (document.activeElement === this.el || document.activeElement?.contains(this.el)) {
 				this.checkSelection();
 				this.startSelectionTracking();
@@ -185,7 +184,7 @@ export default class RichTextbox {
 	}
 
 	protected stopSelectionTracking() {
-		window.clearTimeout(this.selectionTrackingTimeout);
+		window.clearTimeout(this.#selectionTrackingTimeout);
 	}
 
 	public destroy() {

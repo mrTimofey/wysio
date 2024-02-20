@@ -5,8 +5,9 @@ import InlineLink from './editor/toolbox-items/link';
 import TextBlock from './editor/block-types/text';
 import ListBlock from './editor/block-types/list';
 import Editor from './editor';
+import withListStarters from './editor/augmentations/list-starters';
+import withInlineToolbox from './editor/augmentations/inline-toolbox';
 import './text.styl';
-import type Block from './editor/block-types/abstract-base';
 
 const root = document.getElementById('app');
 
@@ -15,24 +16,14 @@ if (!root) {
 }
 
 const editor = new Editor();
-const inlineToolbox = new InlineToolbox([new InlineBold(), new InlineItalic(), new InlineLink()]);
-
-function withToolbox<B extends Block & { set inlineToolbox(arg: InlineToolbox | undefined) }>(block: B): B {
-	block.inlineToolbox = inlineToolbox;
-	return block;
-}
+const toolbox = withInlineToolbox(new InlineToolbox([new InlineBold(), new InlineItalic(), new InlineLink()]));
 
 ['h2', 'h3', 'h4'].forEach((tag) => {
-	editor.registerBlockType(tag, (t) => withToolbox(new TextBlock(t)));
+	editor.registerBlockType(tag, (t) => new TextBlock(t).augment(toolbox));
 });
-editor.registerBlockType('ul', () => withToolbox(new ListBlock()));
-editor.registerBlockType('ol', () => withToolbox(new ListBlock(true)));
-editor.registerBlockType('p', () => {
-	const block = withToolbox(new TextBlock('p'));
-	block.ulBlockTypeName = 'ul';
-	block.olBlockTypeName = 'ol';
-	return block;
-});
+editor.registerBlockType('ul', () => new ListBlock().augmentListItems(toolbox));
+editor.registerBlockType('ol', () => new ListBlock(true).augmentListItems(toolbox));
+editor.registerBlockType('p', () => new TextBlock('p').augment(toolbox, withListStarters()));
 
 editor.defaultBlockType = 'p';
 editor.element.classList.add('editor-root');

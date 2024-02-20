@@ -1,11 +1,8 @@
 import Block from './abstract-base';
 import type { ITextboxEvents } from '../rich-textbox';
 import RichTextbox from '../rich-textbox';
-import type InlineToolbox from '../inline-toolbox';
 import CollectionBlock from './collection';
 import { getCaretRect, setCaretToEnd, setCaretToStart } from '../../caret-utils';
-
-const NUM_CHAR_CODES = ['0'.charCodeAt(0), '9'.charCodeAt(0)];
 
 /**
  * Extract previous block within a parent chain.
@@ -20,24 +17,16 @@ function getPreviousEditableBlock(block: Block | null): Block | null {
 }
 
 export default class TextBlock extends Block {
-	#inlineToolbox?: InlineToolbox;
 	#textbox: RichTextbox;
-	// TODO move to its own module
-	ulBlockTypeName = '';
-	olBlockTypeName = '';
 
 	constructor(tag = 'div') {
 		super(tag);
 		this.#textbox = new RichTextbox(document.createElement('div'));
 		this.element.append(this.#textbox.element);
-		// bind listener methods so they will have access to this
-		this.updateToolboxRange = this.updateToolboxRange.bind(this);
-		this.onInput = this.onInput.bind(this);
 		this.onSplit = this.onSplit.bind(this);
 		this.onEmptyEnter = this.onEmptyEnter.bind(this);
 		this.onMergeWithPrevious = this.onMergeWithPrevious.bind(this);
 		this.onFocusMove = this.onFocusMove.bind(this);
-		this.#textbox.element.addEventListener('input', this.onInput as (e: Event) => void);
 		this.#textbox.on('split', this.onSplit);
 		this.#textbox.on('emptyEnter', this.onEmptyEnter);
 		this.#textbox.on('mergeWithPrevious', this.onMergeWithPrevious);
@@ -48,78 +37,19 @@ export default class TextBlock extends Block {
 		return this.#textbox.element;
 	}
 
-	set inlineToolbox(toolbox: InlineToolbox | undefined) {
-		if (this.#inlineToolbox) {
-			this.#textbox.off('selectionChange', this.updateToolboxRange);
-			this.#inlineToolbox = undefined;
-		}
-		if (!toolbox) {
-			return;
-		}
-		this.#inlineToolbox = toolbox;
-		this.#textbox.on('selectionChange', this.updateToolboxRange);
+	get textbox() {
+		return this.#textbox;
 	}
 
-	get inlineToolbox() {
-		return this.#inlineToolbox;
-	}
-
-	private updateToolboxRange({ range }: ITextboxEvents['selectionChange']) {
-		this.#inlineToolbox?.attachToRange(range, this.#textbox);
-	}
-
-	private onInput(event: InputEvent) {
-		const el = this.#textbox.element;
-		// when only first 2 or 3 symbols are typed and the last one is a space character...
-		if (this.parent && event.data === ' ' && el.firstChild instanceof Text) {
-			const text = el.firstChild.textContent;
-			if (!text?.length) {
-				return;
-			}
-			// ...convert '* ' or '- ' to UL
-			if (
-				this.ulBlockTypeName &&
-				[
-					// for Chromium and friends
-					'*\u00a0',
-					'-\u00a0',
-					// for Firefox
-					'* ',
-					'- ',
-				].includes(text)
-			) {
-				this.parent.convertTo(this, this.ulBlockTypeName);
-			}
-			// ...convert '1. ' or '1) ' to OL
-			else if (this.olBlockTypeName) {
-				const firstCharCode = text.charCodeAt(0);
-				if (
-					// first char is numeric
-					firstCharCode >= NUM_CHAR_CODES[0] &&
-					firstCharCode <= NUM_CHAR_CODES[1] &&
-					['.', ')'].includes(text.charAt(1)) &&
-					[
-						// for Chromium and friends
-						'\u00a0',
-						// for Firefox
-						' ',
-					].includes(text.charAt(2))
-				) {
-					this.parent.convertTo(this, this.olBlockTypeName);
-				}
-			}
-		}
-	}
-
-	private onSplit({ cutFragment }: ITextboxEvents['split']) {
+	protected onSplit({ cutFragment }: ITextboxEvents['split']) {
 		this.parent?.onItemSplit(this, cutFragment);
 	}
 
-	private onEmptyEnter() {
+	protected onEmptyEnter() {
 		this.parent?.onItemEmptyEnter(this);
 	}
 
-	private onMergeWithPrevious({ cutFragment }: ITextboxEvents['mergeWithPrevious']) {
+	protected onMergeWithPrevious({ cutFragment }: ITextboxEvents['mergeWithPrevious']) {
 		if (!this.parent) {
 			return;
 		}
@@ -154,7 +84,7 @@ export default class TextBlock extends Block {
 		this.parent.removeBlock(this);
 	}
 
-	private onFocusMove({ direction }: ITextboxEvents['focusMove']) {
+	protected onFocusMove({ direction }: ITextboxEvents['focusMove']) {
 		let currentParent = this.parent;
 		if (!currentParent) {
 			return;

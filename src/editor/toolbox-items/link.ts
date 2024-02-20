@@ -66,7 +66,7 @@ export default class InlineToolboxLink extends Base {
 		this.dialogEl.remove();
 	}
 
-	private checkNode(node: Node): node is HTMLAnchorElement {
+	#checkNode(node: Node): node is HTMLAnchorElement {
 		return node instanceof HTMLAnchorElement;
 	}
 
@@ -75,7 +75,7 @@ export default class InlineToolboxLink extends Base {
 		this.element.classList.remove(this.activeClass);
 		this.resetAndHideForm();
 		while (rangeNode && rangeNode !== this.toolbox?.textbox?.element) {
-			if (this.checkNode(rangeNode)) {
+			if (this.#checkNode(rangeNode)) {
 				this.element.classList.add(this.activeClass);
 				return;
 			}
@@ -124,7 +124,7 @@ export default class InlineToolboxLink extends Base {
 		}
 		let rangeNode: Node | null = this.range?.commonAncestorContainer || null;
 		while (rangeNode && rangeNode !== this.toolbox?.textbox?.element) {
-			if (this.checkNode(rangeNode)) {
+			if (this.#checkNode(rangeNode)) {
 				rangeNode.replaceWith(...Array.from(rangeNode.childNodes));
 				this.toolbox?.textbox?.element.normalize();
 				return;

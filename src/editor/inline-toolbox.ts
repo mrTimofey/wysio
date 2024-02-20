@@ -50,7 +50,7 @@ export default class InlineToolbox {
 	/**
 	 * Show fake selection (and keep a real one) when user focuses an element within the toolbox.
 	 */
-	private showFakeRange(): void {
+	#showFakeRange(): void {
 		if (!this.range) {
 			return;
 		}
@@ -65,22 +65,22 @@ export default class InlineToolbox {
 		document.body.append(this.#fakeRangeEl);
 	}
 
-	private hideFakeRange() {
+	#hideFakeRange() {
 		this.#fakeRangeEl.innerHTML = '';
 		this.#fakeRangeEl.remove();
 	}
 
 	hide() {
 		this.#el.style.display = 'none';
-		this.hideFakeRange();
+		this.#hideFakeRange();
 	}
 
 	show() {
 		this.#el.style.removeProperty('display');
 	}
 
-	public restoreRange() {
-		this.hideFakeRange();
+	restoreRange() {
+		this.#hideFakeRange();
 		if (!this.#currentRange) {
 			return;
 		}
@@ -92,7 +92,7 @@ export default class InlineToolbox {
 		selection.addRange(this.#currentRange);
 	}
 
-	private hideOnClickOutside() {
+	#hideOnClickOutside() {
 		const onClick = (e: MouseEvent) => {
 			const target = e.target as Node;
 			if (target && (this.#el === target || this.#el.contains(target))) {
@@ -110,9 +110,9 @@ export default class InlineToolbox {
 			setTimeout(() => {
 				// if user interacts with the toolbox
 				if (this.#el === document.activeElement || this.#el.contains(document.activeElement)) {
-					this.hideOnClickOutside();
+					this.#hideOnClickOutside();
 					// a range within a contenteditable element is lost so draw a fake range so user can still see it
-					this.showFakeRange();
+					this.#showFakeRange();
 					return;
 				}
 				this.hide();

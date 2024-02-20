@@ -45,4 +45,11 @@ export default abstract class Block {
 	destroy() {
 		this.element.remove();
 	}
+
+	augment(...augmentations: ((block: this) => () => void)[]): this {
+		for (const augment of augmentations) {
+			augment(this);
+		}
+		return this;
+	}
 }

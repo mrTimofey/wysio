@@ -1,12 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Block from './abstract-base';
 
-export default class CollectionBlock extends Block {
+export default abstract class CollectionBlock extends Block {
 	#blocks: Map<HTMLElement, Block>;
 
 	constructor() {
 		super();
 		this.#blocks = new Map();
+	}
+
+	[Symbol.iterator](): IterableIterator<Block> {
+		return this.#blocks.values();
 	}
 
 	/**
