@@ -1,5 +1,7 @@
 List levels
 Merge sibling ul/ol's
+Convert list item to default on backspace
+Refactor destroy/removeBlock
 Rename EditableBlock -> RichTextbox to prevent Block ambiguity
 Multiple blocks copying
 Block type conversion
