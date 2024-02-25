@@ -1,12 +1,15 @@
+import Editor from './editor';
+
 import InlineToolbox from './editor/inline-toolbox';
 import InlineBold from './editor/toolbox-items/bold';
 import InlineItalic from './editor/toolbox-items/italic';
 import InlineLink from './editor/toolbox-items/link';
 import TextBlock from './editor/block-types/text';
 import ListBlock from './editor/block-types/list';
-import Editor from './editor';
+
 import withListStarters from './editor/augmentations/list-starters';
 import withInlineToolbox from './editor/augmentations/inline-toolbox';
+
 import './text.styl';
 
 const root = document.getElementById('app');
