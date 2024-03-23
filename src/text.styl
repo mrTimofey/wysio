@@ -4,6 +4,7 @@ html, body
 	line-height 1.333
 	margin 0
 	padding 0
+	--list-disc-radius 3px
 .editor-root
 	max-width 800px
 	margin 30px auto
@@ -15,5 +16,35 @@ html, body
 		font-weight bold
 	h3
 		font-size 1.333em
-	p, ul, ol, h2, h3, h4
+	p, h2, h3, h4
 		margin 0 0 1.5em
+	&, :not([data-ordered="true"]) + [data-ordered="true"]
+		counter-reset ordered-list-0
+	:not([data-depth="1"]) + [data-depth="1"]
+		counter-reset ordered-list-1
+	[data-list-item]
+		margin 0 0 1.5em
+		position relative
+		margin-left calc((var(--depth, 0) + 1) * 1.666em)
+		&::before
+			position absolute
+			right 100%
+			margin-right 0.5em
+		&[data-ordered="false"]::before
+			content ''
+			display block
+			border-radius 50%
+			border var(--list-disc-radius) solid
+			width 0
+			height 0
+			top 0
+			bottom 0
+			margin-top auto
+			margin-bottom auto
+		&[data-ordered="true"]::before
+			counter-increment ordered-list-0
+			content counter(ordered-list-0) '.'
+		for n in (1..10)
+			&[data-ordered="true"][data-depth={n}]::before
+				counter-increment ('ordered-list-' + n)
+				content ('counter(ordered-list-' + n + ') .')

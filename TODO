@@ -1,8 +1,6 @@
 List levels
 Merge sibling ul/ol's
 Convert list item to default on backspace
-Augmentations removing
-Refactor destroy/removeBlock, remove augmentations
 Multiple blocks copying
 Block type conversion
 Improve block adding UX

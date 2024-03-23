@@ -107,11 +107,14 @@ export default class Editor extends CollectionBlock {
 		const newBlock = this.createBlockByType(this.defaultBlockType);
 		this.insertBlock(this.getBlockIndex(block), newBlock);
 		newBlock.defaultEditableElement?.focus();
+		if (block.chainable) {
+			this.removeBlock(block);
+		}
 	}
 
 	override onItemSplit(block: Block, cutFragment: () => DocumentFragment): void {
 		super.onItemSplit(block, cutFragment);
-		const newBlock = this.createBlockByType(this.defaultBlockType);
+		const newBlock = this.createBlockByType((block.chainable && block.typeName) || this.defaultBlockType);
 		this.insertBlock(this.getBlockIndex(block), newBlock);
 		if (newBlock.defaultEditableElement) {
 			newBlock.defaultEditableElement.append(cutFragment());
@@ -121,7 +124,7 @@ export default class Editor extends CollectionBlock {
 	}
 
 	override convertTo(block: Block, type: string): void {
-		const contents = block.defaultEditableElement?.children;
+		const contents = block.defaultEditableElement?.childNodes;
 		if (!contents) {
 			return;
 		}

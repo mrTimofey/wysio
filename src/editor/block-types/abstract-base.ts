@@ -3,6 +3,7 @@ import type CollectionBlock from './collection';
 export default abstract class Block {
 	#root: HTMLElement;
 	#parent: CollectionBlock | null = null;
+	#augmentationDestroyers: (() => void)[] = [];
 	typeName?: string;
 
 	constructor(tag = 'div') {
@@ -40,15 +41,53 @@ export default abstract class Block {
 	}
 
 	/**
+	 * Previous block in the parent collection.
+	 */
+	get prevBlock(): Block | null {
+		if (!this.parent) {
+			return null;
+		}
+		const idx = this.parent.getBlockIndex(this);
+		return idx > 1 ? this.parent.getBlock(idx - 1) : null;
+	}
+
+	/**
+	 * Next block in the parent collection.
+	 */
+	get nextBlock(): Block | null {
+		if (!this.parent) {
+			return null;
+		}
+		const idx = this.parent.getBlockIndex(this);
+		return this.parent.getBlock(idx + 1);
+	}
+
+	/**
+	 * Should this block be chained with similar blocks.
+	 * Example 1: list items must stick together, so they are chainable.
+	 * Example 2: headers are unique items and there is no need to create a new header just after another one, so headers are not chainable.
+	 */
+	get chainable() {
+		return false;
+	}
+
+	/**
 	 * Called after this block is removed from editor.
 	 */
 	destroy() {
-		this.element.remove();
+		this.removeAugmentations();
 	}
 
 	augment(...augmentations: ((block: this) => () => void)[]): this {
 		for (const augment of augmentations) {
-			augment(this);
+			this.#augmentationDestroyers.push(augment(this));
+		}
+		return this;
+	}
+
+	removeAugmentations(): this {
+		while (this.#augmentationDestroyers.length) {
+			this.#augmentationDestroyers.pop()?.();
 		}
 		return this;
 	}

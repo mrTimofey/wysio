@@ -85,6 +85,7 @@ export default abstract class CollectionBlock extends Block {
 		if (this.#blocks.size === 0) {
 			this.onEmpty();
 		}
+		block.destroy();
 	}
 
 	/**

@@ -3,28 +3,69 @@ import TextBlock from './text';
 
 export default class ListItemBlock extends TextBlock {
 	#depth = 0;
+	#ordered = false;
 
-	set depth(v: number) {
+	protected set depth(v: number) {
 		this.#depth = v > 0 ? v : 0;
-		this.element.dataset.level = this.#depth.toString();
+		this.element.dataset.depth = this.#depth.toString();
+		this.element.style.setProperty('--depth', this.#depth.toString());
 	}
 
 	get depth() {
 		return this.#depth;
 	}
 
-	constructor(private listeners?: { onGoDeeper: (item: ListItemBlock) => unknown; onGoUpper: (item: ListItemBlock) => unknown }) {
-		super('li');
+	set ordered(v: boolean) {
+		this.#ordered = v;
+		this.element.dataset.ordered = this.#ordered.toString();
+	}
+
+	get ordered() {
+		return this.#ordered;
+	}
+
+	override get chainable() {
+		return true;
+	}
+
+	/**
+	 * Create new list item block.
+	 * @param ordered is this an ordered list item
+	 * @param shiftZeroBlockType block type name to convert to when user shifts list item to zero level
+	 */
+	constructor(
+		ordered = false,
+		public shiftZeroBlockType: string | null = 'p',
+	) {
+		super();
 		this.depth = 0;
+		this.ordered = ordered;
+		this.element.dataset.listItem = 'true';
 		this.defaultEditableElement.addEventListener('keydown', (event) => {
-			if (this.listeners && event.key === 'Tab') {
-				event.preventDefault();
-				if (event.shiftKey) {
-					this.listeners.onGoUpper(this);
-				} else if (isCaretOnStart(this.defaultEditableElement)) {
-					this.listeners.onGoDeeper(this);
-				}
+			if (event.key !== 'Tab') {
+				return;
+			}
+			event.preventDefault();
+			if (event.shiftKey) {
+				this.shiftUpper();
+			} else if (isCaretOnStart(this.defaultEditableElement)) {
+				this.shiftDeeper();
 			}
 		});
+	}
+
+	shiftDeeper() {
+		if (!(this.prevBlock instanceof ListItemBlock) || this.depth > this.prevBlock.depth) {
+			return;
+		}
+		this.depth += 1;
+	}
+
+	shiftUpper() {
+		if (this.depth > 0) {
+			this.depth -= 1;
+		} else if (this.parent && this.shiftZeroBlockType) {
+			this.parent.convertTo(this, this.shiftZeroBlockType);
+		}
 	}
 }

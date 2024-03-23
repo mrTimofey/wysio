@@ -30,6 +30,7 @@ export default function addListStarters(blockTypes: { ul?: string; ol?: string }
 						'- ',
 					].includes(text)
 				) {
+					el.firstChild.textContent = '';
 					block.parent.convertTo(block, blockTypes.ul);
 				}
 				// ...convert '1. ' or '1) ' to OL
@@ -47,6 +48,7 @@ export default function addListStarters(blockTypes: { ul?: string; ol?: string }
 							' ',
 						].includes(text.charAt(2))
 					) {
+						el.firstChild.textContent = '';
 						block.parent.convertTo(block, blockTypes.ol);
 					}
 				}

@@ -24,6 +24,7 @@ module.exports = {
 
 		'filenames/match-regex': [2, '^([a-z0-9]+[-.])*[a-z0-9]+$', true],
 
+		'default-param-last': 0,
 		'no-restricted-syntax': 0,
 
 		'import/no-unresolved': 0,
@@ -121,6 +122,7 @@ module.exports = {
 		'@typescript-eslint/no-useless-constructor': 2,
 		'@typescript-eslint/no-var-requires': 0,
 		'@typescript-eslint/ban-ts-comment': 1,
+		'@typescript-eslint/default-param-last': 2,
 	},
 	overrides: [
 		{
