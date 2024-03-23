@@ -68,4 +68,13 @@ export default class ListItemBlock extends TextBlock {
 			this.parent.convertTo(this, this.shiftZeroBlockType);
 		}
 	}
+
+	protected override onSplit(arg: { cutFragment: () => DocumentFragment }): void {
+		super.onSplit(arg);
+		if (!(this.nextBlock instanceof ListItemBlock)) {
+			return;
+		}
+		// set same depth for a just inserted list block
+		this.nextBlock.depth = this.depth;
+	}
 }
