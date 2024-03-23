@@ -31,10 +31,12 @@ export default class ListItemBlock extends TextBlock {
 	/**
 	 * Create new list item block.
 	 * @param ordered is this an ordered list item
+	 * @param maxDepth max depth level
 	 * @param shiftZeroBlockType block type name to convert to when user shifts list item to zero level
 	 */
 	constructor(
 		ordered = false,
+		public maxDepth = 100,
 		public shiftZeroBlockType: string | null = 'p',
 	) {
 		super();
@@ -55,7 +57,7 @@ export default class ListItemBlock extends TextBlock {
 	}
 
 	shiftDeeper() {
-		if (!(this.prevBlock instanceof ListItemBlock) || this.depth > this.prevBlock.depth) {
+		if (!(this.prevBlock instanceof ListItemBlock) || this.depth > this.prevBlock.depth || this.depth >= this.maxDepth) {
 			return;
 		}
 		this.depth += 1;

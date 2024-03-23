@@ -57,7 +57,6 @@ export default abstract class CollectionBlock extends Block {
 	appendBlock(block: Block) {
 		this.beforeBlockInsert(block);
 		this.childrenRoot.append(block.element);
-		block.parent = this;
 	}
 
 	/**
