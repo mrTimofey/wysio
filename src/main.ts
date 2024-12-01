@@ -7,7 +7,11 @@ import InlineLink from './editor/toolbox-items/link';
 import TextBlock from './editor/block-types/text';
 import ListItemBlock from './editor/block-types/list-item';
 
-import withListStarters from './editor/augmentations/list-starters';
+import {
+	withBulletListStarters,
+	withHeaderStarter,
+	withOrderedListStarters
+} from './editor/augmentations/block-type-converters';
 import withInlineToolbox from './editor/augmentations/inline-toolbox';
 
 import './text.styl';
@@ -26,7 +30,12 @@ const toolbox = withInlineToolbox(new InlineToolbox([new InlineBold(), new Inlin
 });
 editor.registerBlockType('ul', () => new ListItemBlock().augment(toolbox));
 editor.registerBlockType('ol', () => new ListItemBlock(true).augment(toolbox));
-editor.registerBlockType('p', () => new TextBlock('p').augment(toolbox, withListStarters()));
+editor.registerBlockType('p', () => new TextBlock('p').augment(
+	toolbox,
+	withBulletListStarters(),
+	withOrderedListStarters(),
+	...([2, 3, 4] as const).map(level => withHeaderStarter(level)),
+));
 
 editor.defaultBlockType = 'p';
 editor.element.classList.add('editor-root');
