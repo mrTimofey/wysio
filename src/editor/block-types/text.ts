@@ -1,6 +1,5 @@
 import Block from './abstract-base';
-import type { ITextboxEvents } from '../rich-textbox';
-import RichTextbox from '../rich-textbox';
+import RichTextbox, { type ITextboxEvents } from '../rich-textbox';
 import CollectionBlock from './collection';
 import { getCaretRect, setCaretToEnd, setCaretToStart } from '../../caret-utils';
 
@@ -69,11 +68,13 @@ export default class TextBlock extends Block {
 			// start of the cut content
 			range.setStart(rangeNode, 0);
 			range.setEnd(rangeNode, 0);
-		} else if (prevBlock.defaultEditableElement.lastChild) {
+		}
+		else if (prevBlock.defaultEditableElement.lastChild) {
 			// end of the previous element's editable content
 			range.setStartAfter(prevBlock.defaultEditableElement.lastChild);
 			range.setEndAfter(prevBlock.defaultEditableElement.lastChild);
-		} else {
+		}
+		else {
 			// start of the previous element's editable content
 			range.setStart(prevBlock.defaultEditableElement, 0);
 			range.setEnd(prevBlock.defaultEditableElement, 0);

@@ -87,16 +87,17 @@ export default class RichTextbox {
 			event.preventDefault();
 			if (event.shiftKey || event.ctrlKey) {
 				this.insertLineBreak();
-			} else if (this.el.textContent?.trim()) {
+			}
+			else if (this.el.textContent?.trim()) {
 				this.emit('split', { cutFragment: () => this.cutFragmentAfterCursor() });
-			} else {
+			}
+			else {
 				this.emit('emptyEnter', undefined);
 			}
 		}
 	}
 
 	protected onKeyDown(event: KeyboardEvent) {
-		// eslint-disable-next-line default-case
 		switch (event.key) {
 			case 'Backspace':
 				this.onBackspace(event);

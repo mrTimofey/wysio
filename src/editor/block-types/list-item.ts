@@ -50,7 +50,8 @@ export default class ListItemBlock extends TextBlock {
 			event.preventDefault();
 			if (event.shiftKey) {
 				this.shiftUpper();
-			} else if (isCaretOnStart(this.defaultEditableElement)) {
+			}
+			else if (isCaretOnStart(this.defaultEditableElement)) {
 				this.shiftDeeper();
 			}
 		});
@@ -66,7 +67,8 @@ export default class ListItemBlock extends TextBlock {
 	shiftUpper() {
 		if (this.depth > 0) {
 			this.depth -= 1;
-		} else if (this.parent && this.shiftZeroBlockType) {
+		}
+		else if (this.parent && this.shiftZeroBlockType) {
 			this.parent.convertTo(this, this.shiftZeroBlockType);
 		}
 	}

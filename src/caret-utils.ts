@@ -183,7 +183,8 @@ export function setCaretToStart(element: HTMLElement, leftOffsetPx?: number): vo
 		const oldOffset = range.endOffset;
 		if (range.endOffset < maxOffset) {
 			range.setStart(range.endContainer, range.endOffset + 1);
-		} else {
+		}
+		else {
 			const next = getDeepNextSibling(range.endContainer);
 			if (!next) {
 				break;
@@ -229,7 +230,8 @@ export function setCaretToEnd(element: HTMLElement, leftOffsetPx?: number): void
 			const oldOffset = range.endOffset;
 			if (range.endOffset > 0) {
 				range.setEnd(range.endContainer, range.endOffset - 1);
-			} else {
+			}
+			else {
 				const prev = getDeepPrevSibling(range.endContainer);
 				if (!prev) {
 					break;

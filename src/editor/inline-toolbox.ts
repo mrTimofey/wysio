@@ -26,7 +26,8 @@ export default class InlineToolbox {
 	) {
 		if (el) {
 			this.#el = el;
-		} else {
+		}
+		else {
 			const newEl = document.createElement('div');
 			document.body.append(newEl);
 			this.#el = newEl;
