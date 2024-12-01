@@ -5,6 +5,7 @@ import { configs } from 'typescript-eslint';
 export default [
 	configs.base,
 	{
+		files: ['**/*.js', '**/*.ts'],
 		plugins: {
 			'@stylistic': stylistic,
 		},
@@ -120,6 +121,7 @@ export default [
 			'require-yield': 2,
 			'template-curly-spacing': 1,
 			'@typescript-eslint/array-type': [2, { default: 'array' }],
+			'@typescript-eslint/consistent-type-imports': [2, { fixStyle: 'inline-type-imports' }],
 			'@typescript-eslint/naming-convention': [2,
 				{ selector: 'default', format: ['camelCase', 'StrictPascalCase', 'UPPER_CASE'] },
 				{ selector: 'property', format: ['camelCase', 'StrictPascalCase'], leadingUnderscore: 'allow' },
